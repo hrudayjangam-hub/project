@@ -3,3 +3,4 @@
   Visit https://vercel.com/oauth/device?user_code=NVVC-FWLX
 
 Waiting for authentication...
+Error: request to https://api.vercel.com/login/oauth/token failed, reason: read ECONNRESET
