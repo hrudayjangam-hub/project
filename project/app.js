@@ -24,11 +24,30 @@ window.addEventListener('load', () => {
   }, 1800);
 });
 
-/* ─── NAVBAR SCROLL ─── */
+/* ── NAVBAR SCROLL & MOBILE TOGGLE ── */
 window.addEventListener('scroll', () => {
   const nav = document.getElementById('navbar');
   if (window.scrollY > 60) nav.classList.add('scrolled');
   else nav.classList.remove('scrolled');
+});
+
+// Mobile Menu Toggle
+const navToggle = document.getElementById('nav-toggle');
+const navLinks = document.querySelector('.nav-links');
+
+if (navToggle) {
+  navToggle.addEventListener('click', () => {
+    navToggle.classList.toggle('active');
+    navLinks.classList.toggle('active');
+  });
+}
+
+// Close menu when clicking links
+document.querySelectorAll('.nav-link').forEach(link => {
+  link.addEventListener('click', () => {
+    navToggle.classList.remove('active');
+    navLinks.classList.remove('active');
+  });
 });
 
 /* ─── SMOOTH SCROLL ─── */
