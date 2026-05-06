@@ -133,7 +133,7 @@
   </div>
 
   <div class="generator-container zen-mode">
-    <!-- Simplified Generator Section -->
+    <!-- Main Command Center -->
     <div class="main-command-center">
       <div class="command-box-large glass-card">
         <div class="command-input-wrapper">
@@ -145,64 +145,38 @@
       </div>
     </div>
 
-    <!-- Right: Output Preview Panel -->
-    <div class="output-panel glass-card">
-      <h3>🖼️ Creation Preview</h3>
-      <div class="image-output-area" id="image-output-area" onclick="openOutputModal()">
-        <div class="output-placeholder" id="output-placeholder">
-          <div class="placeholder-icon">✦</div>
-          <p>Click to open module</p>
-          <span>Result will appear here after generation</span>
-        </div>
-        <img id="generated-image-preview" src="" alt="Preview" style="display:none;" />
+    <!-- Immediate Output Display (Inline) -->
+    <div class="inline-output-container glass-card" id="output-section">
+      <div class="output-header">
+        <div class="status-indicator" id="creation-status">Ready to Create</div>
       </div>
-      <div id="mini-status" style="text-align:center;font-size:0.85rem;color:var(--text-dim);">Ready to create</div>
+      
+      <div class="image-display-area" id="image-output-area">
+        <div class="output-placeholder" id="output-placeholder">
+          <div class="placeholder-icon">🎨</div>
+          <p>Your AI Masterpiece will appear here</p>
+        </div>
+        
+        <!-- Loading State -->
+        <div class="inline-loader" id="image-loader" style="display:none;">
+          <div class="loader-spinner"></div>
+          <p>AI is crafting your vision...</p>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
+
+        <!-- The Final Image -->
+        <img id="generated-image" src="" alt="Generated AI Image" style="display:none;" />
+      </div>
+
+      <div class="output-actions" id="output-actions" style="display:none;">
+        <button class="btn-primary" onclick="downloadFiltered()">⬇️ Download HD</button>
+        <button class="btn-secondary" onclick="shareImage()">🔗 Share URL</button>
+        <button class="btn-secondary" onclick="generateVariations()">🎲 Variations</button>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ─── CREATION MODULE (IMMERSIVE MODAL) ─── -->
-<div id="output-modal" class="output-overlay" style="display:none;">
-  <div class="modal-blur-bg" onclick="closeOutputModal()"></div>
-  <div class="creation-module glass-card">
-    <button class="modal-close" onclick="closeOutputModal()">✕</button>
-    <div class="module-header">
-      <div class="module-badge">🎨 AI Creation Module</div>
-      <h3 id="module-status">Generating Masterpiece...</h3>
-    </div>
-    
-    <div class="module-content">
-      <div class="module-image-container glass-card">
-        <div class="image-loader" id="module-loader">
-          <div class="loader-spinner"></div>
-          <p>AI is thinking...</p>
-          <div class="progress-bar"><div class="progress-fill" id="module-progress-fill"></div></div>
-        </div>
-        <img id="generated-image" src="" alt="Generated AI Image" style="display:none;" />
-      </div>
-      
-      <div class="module-controls" id="output-actions" style="display:none;">
-        <div class="control-actions">
-          <button class="btn-primary" onclick="downloadFiltered()">⬇️ Download HD</button>
-          <button class="btn-secondary" onclick="shareImage()">🔗 Share URL</button>
-          <button class="btn-secondary" onclick="generateVariations()">🎲 Variations</button>
-        </div>
-        
-        <div class="filter-panel">
-          <div class="filter-title">🎨 Refine Result</div>
-          <div class="filter-row"><label>Brightness</label><input type="range" id="f-brightness" min="0" max="200" value="100" oninput="applyFilters()"></div>
-          <div class="filter-row"><label>Contrast</label><input type="range" id="f-contrast" min="0" max="200" value="100" oninput="applyFilters()"></div>
-          <div class="filter-row"><label>Saturation</label><input type="range" id="f-saturation" min="0" max="200" value="100" oninput="applyFilters()"></div>
-        </div>
-        
-        <div class="prompt-info glass-card">
-          <span class="pu-label">Prompt Used:</span>
-          <p id="prompt-used-text"></p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
   </div>
 </section>
 

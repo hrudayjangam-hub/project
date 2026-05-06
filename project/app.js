@@ -149,20 +149,22 @@ function generateImage(promptOverride) {
   var prompt = promptOverride || buildPrompt();
 
   if (!prompt || prompt.includes('[your subject]')) {
-    showToast('Please enter a subject first!', 'error');
+    showToast('What should I create? Enter a prompt first!', 'error');
     document.getElementById('subject-input').focus();
     return;
   }
 
-  // Open Modal and show loading state
-  openOutputModal();
-  document.getElementById('module-status').textContent = 'Generating Masterpiece...';
+  // UI Updates for Loading
+  document.getElementById('output-placeholder').style.display = 'none';
   document.getElementById('generated-image').style.display = 'none';
   document.getElementById('output-actions').style.display = 'none';
-  document.getElementById('module-loader').style.display = 'flex';
-  document.getElementById('mini-status').textContent = 'Generating...';
+  document.getElementById('image-loader').style.display = 'flex';
+  document.getElementById('creation-status').textContent = 'AI is crafting...';
 
-  var fill = document.getElementById('module-progress-fill');
+  // Smooth Scroll to Result
+  scrollToSection('output-section');
+
+  var fill = document.getElementById('progress-fill');
   fill.style.width = '0%';
   fill.style.animation = 'none';
   void fill.offsetWidth;
@@ -178,44 +180,23 @@ function generateImage(promptOverride) {
   img.crossOrigin = 'anonymous';
 
   img.onload = function() {
-    document.getElementById('module-loader').style.display = 'none';
+    document.getElementById('image-loader').style.display = 'none';
     var displayImg = document.getElementById('generated-image');
     displayImg.src = imageUrl;
     displayImg.style.display = 'block';
-    
-    // Update preview on main page
-    var previewImg = document.getElementById('generated-image-preview');
-    previewImg.src = imageUrl;
-    previewImg.style.display = 'block';
-    document.getElementById('output-placeholder').style.display = 'none';
-    document.getElementById('mini-status').textContent = 'Masterpiece Ready ✦';
-
     document.getElementById('output-actions').style.display = 'flex';
-    document.getElementById('module-status').textContent = 'Generation Complete';
-    
-    var promptText = prompt.substring(0, 120) + (prompt.length > 120 ? '...' : '');
-    document.getElementById('prompt-used-text').textContent = promptText;
+    document.getElementById('creation-status').textContent = 'Masterpiece Ready ✦';
     
     showToast('Image generated successfully!', 'success');
   };
 
   img.onerror = function() {
-    document.getElementById('module-loader').style.display = 'none';
-    document.getElementById('module-status').textContent = 'Generation Failed';
-    showToast('Generation failed. Try a different prompt.', 'error');
+    document.getElementById('image-loader').style.display = 'none';
+    document.getElementById('creation-status').textContent = 'Generation Failed';
+    showToast('Generation failed. Try again.', 'error');
   };
 
   img.src = imageUrl;
-}
-
-/* ─── MODAL CONTROLS ─── */
-function openOutputModal() {
-  document.getElementById('output-modal').style.display = 'flex';
-  document.body.style.overflow = 'hidden'; // Prevent scroll
-}
-function closeOutputModal() {
-  document.getElementById('output-modal').style.display = 'none';
-  document.body.style.overflow = 'auto'; // Restore scroll
 }
 
 /* ─── DOWNLOAD ─── */
