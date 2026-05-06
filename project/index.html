@@ -132,113 +132,77 @@
     <p>Describe anything and watch AI bring it to life</p>
   </div>
 
-  <div class="generator-container">
-    <div class="prompt-panel glass-card">
-      <h3>✏️ Build Your Prompt</h3>
-      <div class="form-group">
-        <label for="subject-input">Subject / Main Idea</label>
-        <input type="text" id="subject-input" placeholder="e.g. a warrior in ancient armor, a glowing city at night..." />
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="style-select">Art Style</label>
-          <select id="style-select">
-            <option value="realistic">🖼️ Realistic</option>
-            <option value="anime">🌸 Anime</option>
-            <option value="cinematic">🎬 Cinematic</option>
-            <option value="watercolor">🎨 Watercolor</option>
-            <option value="3D render">🧊 3D Render</option>
-            <option value="cyberpunk">⚡ Cyberpunk</option>
-            <option value="fantasy art">🧙 Fantasy Art</option>
-            <option value="oil painting">🖌️ Oil Painting</option>
-          </select>
+  <div class="generator-container zen-mode">
+    <!-- Simplified Generator Section -->
+    <div class="main-command-center">
+      <div class="command-box-large glass-card">
+        <div class="command-input-wrapper">
+          <div class="command-icon">✦</div>
+          <input type="text" id="subject-input" placeholder="Describe your masterpiece here..." />
+          <button class="btn-generate-main" onclick="generateImage()">🎨 Generate</button>
         </div>
-        <div class="form-group">
-          <label for="lighting-select">Lighting</label>
-          <select id="lighting-select">
-            <option value="soft">☀️ Soft</option>
-            <option value="dramatic">🎭 Dramatic</option>
-            <option value="neon">💜 Neon</option>
-            <option value="natural">🌿 Natural</option>
-            <option value="golden hour">🌅 Golden Hour</option>
-            <option value="studio">💡 Studio</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="mood-select">Mood</label>
-          <select id="mood-select">
-            <option value="aesthetic">✨ Aesthetic</option>
-            <option value="dark">🌑 Dark</option>
-            <option value="futuristic">🚀 Futuristic</option>
-            <option value="happy">😊 Happy</option>
-            <option value="mysterious">🌫️ Mysterious</option>
-            <option value="epic">⚔️ Epic</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="quality-select">Quality</label>
-          <select id="quality-select">
-            <option value="ultra-detailed, 4K resolution, sharp focus">4K Ultra</option>
-            <option value="8K resolution, photorealistic, ultra-detailed">8K Photo</option>
-            <option value="HD, professional quality">HD Pro</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="environment-input">Environment / Background <span class="label-opt">(optional)</span></label>
-        <input type="text" id="environment-input" placeholder="e.g. cyberpunk city, enchanted forest, space..." />
-      </div>
-      <div class="form-group">
-        <label for="extra-input">Extra Details <span class="label-opt">(optional)</span></label>
-        <input type="text" id="extra-input" placeholder="e.g. glowing effects, fog, dramatic shadows..." />
-      </div>
-      <div class="generated-prompt-box">
-        <div class="gp-label">📋 Generated Prompt</div>
-        <div id="generated-prompt-text" class="gp-text">Your crafted prompt will appear here...</div>
-        <button class="copy-btn" onclick="copyPrompt()" id="copy-btn">📋 Copy</button>
-      </div>
-      <div class="action-buttons">
-        <button class="btn-build" onclick="buildPrompt()">⚡ Build Prompt</button>
-        <button class="btn-generate" onclick="generateImage()">🎨 Generate Image</button>
+        <p class="command-hint">Hint: Try "A futuristic city in the clouds" or "Cyberpunk samurai"</p>
       </div>
     </div>
 
+    <!-- Right: Output Preview Panel -->
     <div class="output-panel glass-card">
-      <h3>🖼️ Generated Output</h3>
-      <div class="image-output-area" id="image-output-area">
+      <h3>🖼️ Creation Preview</h3>
+      <div class="image-output-area" id="image-output-area" onclick="openOutputModal()">
         <div class="output-placeholder" id="output-placeholder">
-          <div class="placeholder-icon">🎨</div>
-          <p>Your AI-generated image will appear here</p>
-          <span>Fill in the details and click Generate</span>
+          <div class="placeholder-icon">✦</div>
+          <p>Click to open module</p>
+          <span>Result will appear here after generation</span>
+        </div>
+        <img id="generated-image-preview" src="" alt="Preview" style="display:none;" />
+      </div>
+      <div id="mini-status" style="text-align:center;font-size:0.85rem;color:var(--text-dim);">Ready to create</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CREATION MODULE (IMMERSIVE MODAL) ─── -->
+<div id="output-modal" class="output-overlay" style="display:none;">
+  <div class="modal-blur-bg" onclick="closeOutputModal()"></div>
+  <div class="creation-module glass-card">
+    <button class="modal-close" onclick="closeOutputModal()">✕</button>
+    <div class="module-header">
+      <div class="module-badge">🎨 AI Creation Module</div>
+      <h3 id="module-status">Generating Masterpiece...</h3>
+    </div>
+    
+    <div class="module-content">
+      <div class="module-image-container glass-card">
+        <div class="image-loader" id="module-loader">
+          <div class="loader-spinner"></div>
+          <p>AI is thinking...</p>
+          <div class="progress-bar"><div class="progress-fill" id="module-progress-fill"></div></div>
         </div>
         <img id="generated-image" src="" alt="Generated AI Image" style="display:none;" />
-        <div class="image-loader" id="image-loader" style="display:none;">
-          <div class="loader-spinner"></div>
-          <p>AI is creating your masterpiece...</p>
-          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      </div>
+      
+      <div class="module-controls" id="output-actions" style="display:none;">
+        <div class="control-actions">
+          <button class="btn-primary" onclick="downloadFiltered()">⬇️ Download HD</button>
+          <button class="btn-secondary" onclick="shareImage()">🔗 Share URL</button>
+          <button class="btn-secondary" onclick="generateVariations()">🎲 Variations</button>
+        </div>
+        
+        <div class="filter-panel">
+          <div class="filter-title">🎨 Refine Result</div>
+          <div class="filter-row"><label>Brightness</label><input type="range" id="f-brightness" min="0" max="200" value="100" oninput="applyFilters()"></div>
+          <div class="filter-row"><label>Contrast</label><input type="range" id="f-contrast" min="0" max="200" value="100" oninput="applyFilters()"></div>
+          <div class="filter-row"><label>Saturation</label><input type="range" id="f-saturation" min="0" max="200" value="100" oninput="applyFilters()"></div>
+        </div>
+        
+        <div class="prompt-info glass-card">
+          <span class="pu-label">Prompt Used:</span>
+          <p id="prompt-used-text"></p>
         </div>
       </div>
-      <div class="output-actions" id="output-actions" style="display:none;">
-        <button class="btn-outline" onclick="downloadFiltered()">⬇️ Download</button>
-        <button class="btn-outline" onclick="shareImage()">🔗 Share URL</button>
-        <button class="btn-outline" onclick="generateImage()">🔄 Regenerate</button>
-        <button class="btn-outline" onclick="generateVariations()">🎲 Variations</button>
-      </div>
-      <div class="filter-panel" id="filter-panel" style="display:none;">
-        <div class="filter-title">🎨 Image Filters</div>
-        <div class="filter-row"><label>Brightness</label><input type="range" id="f-brightness" min="0" max="200" value="100" oninput="applyFilters()"><span id="v-brightness">100</span>%</div>
-        <div class="filter-row"><label>Contrast</label><input type="range" id="f-contrast" min="0" max="200" value="100" oninput="applyFilters()"><span id="v-contrast">100</span>%</div>
-        <div class="filter-row"><label>Saturation</label><input type="range" id="f-saturation" min="0" max="200" value="100" oninput="applyFilters()"><span id="v-saturation">100</span>%</div>
-        <div class="filter-row"><label>Sharpness</label><input type="range" id="f-blur" min="0" max="10" value="0" step="0.5" oninput="applyFilters()"><span id="v-blur">0</span></div>
-        <button class="filter-reset" onclick="resetFilters()">↺ Reset</button>
-      </div>
-      <div class="variations-panel" id="variations-panel" style="display:none;">
-        <div class="filter-title">🎲 Variations</div>
-        <div class="variations-grid" id="variations-grid"></div>
-      </div>
     </div>
+  </div>
+</div>
   </div>
 </section>
 

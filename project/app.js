@@ -100,41 +100,33 @@ function initParticles() {
 /* ═══════════════════════════════════════
    PROMPT BUILDER
 ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   PROMPT BUILDER (ZEN MODE)
+═══════════════════════════════════════ */
 function buildPrompt() {
   const subject = document.getElementById('subject-input').value.trim() || '[your subject]';
-  const style = document.getElementById('style-select').value;
-  const lighting = document.getElementById('lighting-select').value;
-  const mood = document.getElementById('mood-select').value;
-  const quality = document.getElementById('quality-select').value;
-  const env = document.getElementById('environment-input').value.trim();
-  const extra = document.getElementById('extra-input').value.trim();
 
   // --- PROMPT BOOSTER ---
-  // We add high-quality keywords to ensure the AI produces elite results
+  // Background intelligence to ensure elite quality
   const qualityBooster = ', masterpiece, highly detailed, sharp focus, intricate textures, professional lighting, 8k resolution, ray tracing, volumetric lighting';
   
   let prompt = 'Create an elite image of ' + subject;
-  if (env) prompt += ' in ' + env;
-  prompt += ', style: ' + style + ', lighting: ' + lighting + ' lighting, mood: ' + mood + ', ' + quality + qualityBooster;
-  if (extra) prompt += ', ' + extra;
+  prompt += qualityBooster;
   
   // --- NEGATIVE PROMOTING ---
-  // This tells the AI what NOT to create to avoid distorted images
   prompt += ' --no blurry, deformed, low quality, distorted hands, extra fingers, messy face, text, watermark, grainy, bad anatomy';
 
   currentPrompt = prompt;
-  document.getElementById('generated-prompt-text').textContent = prompt;
   return prompt;
 }
 
-['subject-input', 'environment-input', 'extra-input'].forEach(function(id) {
-  var el = document.getElementById(id);
-  if (el) el.addEventListener('input', buildPrompt);
-});
-['style-select', 'lighting-select', 'mood-select', 'quality-select'].forEach(function(id) {
-  var el = document.getElementById(id);
-  if (el) el.addEventListener('change', buildPrompt);
-});
+// Single listener for the Zen Mode input
+var subjectInput = document.getElementById('subject-input');
+if (subjectInput) {
+  subjectInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') generateImage();
+  });
+}
 
 /* ─── COPY PROMPT ─── */
 function copyPrompt() {
@@ -162,13 +154,15 @@ function generateImage(promptOverride) {
     return;
   }
 
-  document.getElementById('output-placeholder').style.display = 'none';
+  // Open Modal and show loading state
+  openOutputModal();
+  document.getElementById('module-status').textContent = 'Generating Masterpiece...';
   document.getElementById('generated-image').style.display = 'none';
   document.getElementById('output-actions').style.display = 'none';
-  document.getElementById('prompt-used-box').style.display = 'none';
-  document.getElementById('image-loader').style.display = 'flex';
+  document.getElementById('module-loader').style.display = 'flex';
+  document.getElementById('mini-status').textContent = 'Generating...';
 
-  var fill = document.getElementById('progress-fill');
+  var fill = document.getElementById('module-progress-fill');
   fill.style.width = '0%';
   fill.style.animation = 'none';
   void fill.offsetWidth;
@@ -184,27 +178,44 @@ function generateImage(promptOverride) {
   img.crossOrigin = 'anonymous';
 
   img.onload = function() {
-    document.getElementById('image-loader').style.display = 'none';
+    document.getElementById('module-loader').style.display = 'none';
     var displayImg = document.getElementById('generated-image');
     displayImg.src = imageUrl;
     displayImg.style.display = 'block';
+    
+    // Update preview on main page
+    var previewImg = document.getElementById('generated-image-preview');
+    previewImg.src = imageUrl;
+    previewImg.style.display = 'block';
+    document.getElementById('output-placeholder').style.display = 'none';
+    document.getElementById('mini-status').textContent = 'Masterpiece Ready ✦';
+
     document.getElementById('output-actions').style.display = 'flex';
-    document.getElementById('prompt-used-box').style.display = 'block';
+    document.getElementById('module-status').textContent = 'Generation Complete';
+    
     var promptText = prompt.substring(0, 120) + (prompt.length > 120 ? '...' : '');
     document.getElementById('prompt-used-text').textContent = promptText;
+    
     showToast('Image generated successfully!', 'success');
   };
 
   img.onerror = function() {
-    document.getElementById('image-loader').style.display = 'none';
-    var ph = document.getElementById('output-placeholder');
-    ph.style.display = 'flex';
-    ph.querySelector('p').textContent = 'Generation failed. Try again!';
-    ph.querySelector('span').textContent = 'Check your connection or change the prompt.';
+    document.getElementById('module-loader').style.display = 'none';
+    document.getElementById('module-status').textContent = 'Generation Failed';
     showToast('Generation failed. Try a different prompt.', 'error');
   };
 
   img.src = imageUrl;
+}
+
+/* ─── MODAL CONTROLS ─── */
+function openOutputModal() {
+  document.getElementById('output-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden'; // Prevent scroll
+}
+function closeOutputModal() {
+  document.getElementById('output-modal').style.display = 'none';
+  document.body.style.overflow = 'auto'; // Restore scroll
 }
 
 /* ─── DOWNLOAD ─── */
