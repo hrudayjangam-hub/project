@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PixelMind AI – AI Image Generator & Editor</title>
+  <meta name="description" content="Generate, edit, and modify stunning AI images using advanced prompts. PixelMind AI makes creative design effortless for everyone." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ─── PRELOADER ─── -->
+<div id="preloader">
+  <div class="preloader-inner">
+    <div class="preloader-ring"></div>
+    <div class="preloader-ring r2"></div>
+    <div class="preloader-ring r3"></div>
+    <p class="preloader-text">Initializing AI Engine<span class="dots">...</span></p>
+  </div>
+</div>
+
+<!-- ─── AUTH MODAL ─── -->
+<div id="auth-modal" class="auth-overlay" style="display:none;">
+  <div class="auth-box glass-card">
+    <button class="auth-close" onclick="closeAuthModal()">✕</button>
+    <div class="auth-logo">✦ PixelMind <span class="accent">AI</span></div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</button>
+      <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Register</button>
+    </div>
+    <!-- Login Form -->
+    <div id="form-login">
+      <div class="form-group"><label>Username</label><input type="text" id="login-username" placeholder="Enter username" /></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-password" placeholder="Enter password" /></div>
+      <button class="btn-generate" style="width:100%;margin-top:8px;" onclick="doLogin()">🔑 Login</button>
+      <p class="auth-switch">No account? <a href="#" onclick="switchTab('register')">Register here</a></p>
+    </div>
+    <!-- Register Form -->
+    <div id="form-register" style="display:none;">
+      <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" placeholder="Your name" /></div>
+      <div class="form-group"><label>Username</label><input type="text" id="reg-username" placeholder="Choose a username" /></div>
+      <div class="form-group"><label>Password</label><input type="password" id="reg-password" placeholder="Create a password" /></div>
+      <button class="btn-generate" style="width:100%;margin-top:8px;" onclick="doRegister()">🚀 Create Account</button>
+      <p class="auth-switch">Have an account? <a href="#" onclick="switchTab('login')">Login here</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PARTICLES CANVAS ─── -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- ─── NAV ─── -->
+<nav id="navbar">
+  <div class="nav-logo">
+    <div class="logo-icon">✦</div>
+    <span>PixelMind <span class="accent">AI</span></span>
+  </div>
+  <div class="nav-links">
+    <a href="#generator" class="nav-link">Generator</a>
+    <a href="#templates" class="nav-link">Templates</a>
+    <a href="#editor" class="nav-link">Editor</a>
+    <a href="#history" class="nav-link">History</a>
+    <a href="#presentation" class="nav-link">PRT</a>
+  </div>
+  <div class="nav-cta" id="nav-cta">
+    <span id="nav-user-info" style="display:none;" class="nav-user-info">
+      <span id="nav-username" class="nav-username"></span>
+      <button class="btn-logout" onclick="doLogout()">Logout</button>
+    </span>
+    <button class="btn-glow" id="nav-login-btn" onclick="openAuthModal()">🔑 Login</button>
+  </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section id="hero">
+  <div class="hero-bg-orb orb1"></div>
+  <div class="hero-bg-orb orb2"></div>
+  <div class="hero-bg-orb orb3"></div>
+  <div class="hero-content">
+    <div class="hero-badge">🤖 Powered by Deep Learning</div>
+    <h1 class="hero-title">
+      Create Stunning Images<br/>
+      <span class="gradient-text">With Just Words</span>
+    </h1>
+    <p class="hero-subtitle">
+      Generate, edit, and transform images using AI. Turn your imagination into 
+      professional-quality visuals in seconds — no design skills needed.
+    </p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="scrollToSection('generator')">
+        <span>🎨 Start Creating</span>
+      </button>
+      <button class="btn-secondary" onclick="scrollToSection('presentation')">
+        <span>📊 View PRT</span>
+      </button>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num">10+</span><span class="stat-label">Prompt Templates</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-num">4K</span><span class="stat-label">Resolution Output</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Creative Freedom</span></div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-card floating">
+      <div class="card-glow"></div>
+      <div class="image-preview-grid">
+        <div class="preview-img p1"></div>
+        <div class="preview-img p2"></div>
+        <div class="preview-img p3"></div>
+        <div class="preview-img p4"></div>
+      </div>
+      <div class="card-label">✦ AI Generated Gallery</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── GENERATOR SECTION ─── -->
+<section id="generator">
+  <div class="section-header">
+    <div class="section-badge">🎨 Image Generator</div>
+    <h2>Generate AI Images</h2>
+    <p>Describe anything and watch AI bring it to life</p>
+  </div>
+
+  <div class="generator-container">
+    <!-- Left: Prompt Panel -->
+    <div class="prompt-panel glass-card">
+      <h3>✏️ Build Your Prompt</h3>
+      
+      <div class="form-group">
+        <label for="subject-input">Subject / Main Idea</label>
+        <input type="text" id="subject-input" placeholder="e.g. a warrior in ancient armor, a glowing city at night..." />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="style-select">Art Style</label>
+          <select id="style-select">
+            <option value="realistic">🖼️ Realistic</option>
+            <option value="anime">🌸 Anime</option>
+            <option value="cinematic">🎬 Cinematic</option>
+            <option value="watercolor">🎨 Watercolor</option>
+            <option value="3D render">🧊 3D Render</option>
+            <option value="cyberpunk">⚡ Cyberpunk</option>
+            <option value="fantasy art">🧙 Fantasy Art</option>
+            <option value="oil painting">🖌️ Oil Painting</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="lighting-select">Lighting</label>
+          <select id="lighting-select">
+            <option value="soft">☀️ Soft</option>
+            <option value="dramatic">🎭 Dramatic</option>
+            <option value="neon">💜 Neon</option>
+            <option value="natural">🌿 Natural</option>
+            <option value="golden hour">🌅 Golden Hour</option>
+            <option value="studio">💡 Studio</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="mood-select">Mood</label>
+          <select id="mood-select">
+            <option value="aesthetic">✨ Aesthetic</option>
+            <option value="dark">🌑 Dark</option>
+            <option value="futuristic">🚀 Futuristic</option>
+            <option value="happy">😊 Happy</option>
+            <option value="mysterious">🌫️ Mysterious</option>
+            <option value="epic">⚔️ Epic</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="quality-select">Quality</label>
+          <select id="quality-select">
+            <option value="ultra-detailed, 4K resolution, sharp focus">4K Ultra</option>
+            <option value="8K resolution, photorealistic, ultra-detailed">8K Photo</option>
+            <option value="HD, professional quality">HD Pro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="environment-input">Environment / Background <span class="label-opt">(optional)</span></label>
+        <input type="text" id="environment-input" placeholder="e.g. cyberpunk city, enchanted forest, space..." />
+      </div>
+
+      <div class="form-group">
+        <label for="extra-input">Extra Details <span class="label-opt">(optional)</span></label>
+        <input type="text" id="extra-input" placeholder="e.g. glowing effects, fog, dramatic shadows..." />
+      </div>
+
+      <div class="generated-prompt-box">
+        <div class="gp-label">📋 Generated Prompt</div>
+        <div id="generated-prompt-text" class="gp-text">Your crafted prompt will appear here...</div>
+        <button class="copy-btn" onclick="copyPrompt()" id="copy-btn">📋 Copy</button>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn-build" onclick="buildPrompt()">⚡ Build Prompt</button>
+        <button class="btn-generate" onclick="generateImage()">🎨 Generate Image</button>
+      </div>
+    </div>
+
+    <!-- Right: Output Panel -->
+    <div class="output-panel glass-card">
+      <h3>🖼️ Generated Output</h3>
+      <div class="image-output-area" id="image-output-area">
+        <div class="output-placeholder" id="output-placeholder">
+          <div class="placeholder-icon">🎨</div>
+          <p>Your AI-generated image will appear here</p>
+          <span>Fill in the details and click Generate</span>
+        </div>
+        <img id="generated-image" src="" alt="Generated AI Image" style="display:none;" />
+        <div class="image-loader" id="image-loader" style="display:none;">
+          <div class="loader-spinner"></div>
+          <p>AI is creating your masterpiece...</p>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
+      </div>
+      <div class="output-actions" id="output-actions" style="display:none;">
+        <button class="btn-outline" onclick="downloadFiltered()">⬇️ Download</button>
+        <button class="btn-outline" onclick="shareImage()">🔗 Share URL</button>
+        <button class="btn-outline" onclick="generateImage()">🔄 Regenerate</button>
+        <button class="btn-outline" onclick="generateVariations()">🎲 Variations</button>
+      </div>
+      <!-- Filter Sliders -->
+      <div class="filter-panel" id="filter-panel" style="display:none;">
+        <div class="filter-title">🎨 Image Filters</div>
+        <div class="filter-row"><label>Brightness</label><input type="range" id="f-brightness" min="0" max="200" value="100" oninput="applyFilters()"><span id="v-brightness">100</span>%</div>
+        <div class="filter-row"><label>Contrast</label><input type="range" id="f-contrast" min="0" max="200" value="100" oninput="applyFilters()"><span id="v-contrast">100</span>%</div>
+        <div class="filter-row"><label>Saturation</label><input type="range" id="f-saturation" min="0" max="200" value="100" oninput="applyFilters()"><span id="v-saturation">100</span>%</div>
+        <div class="filter-row"><label>Sharpness</label><input type="range" id="f-blur" min="0" max="10" value="0" step="0.5" oninput="applyFilters()"><span id="v-blur">0</span></div>
+        <button class="filter-reset" onclick="resetFilters()">↺ Reset</button>
+      </div>
+      <!-- Variations Gallery -->
+      <div class="variations-panel" id="variations-panel" style="display:none;">
+        <div class="filter-title">🎲 Variations</div>
+        <div class="variations-grid" id="variations-grid"></div>
+      </div>
+      <div class="prompt-used-box" id="prompt-used-box" style="display:none;">
+        <span class="pu-label">Used Prompt:</span>
+        <span id="prompt-used-text"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TEMPLATES SECTION ─── -->
+<section id="templates">
+  <div class="section-header">
+    <div class="section-badge">⚡ Quick Templates</div>
+    <h2>One-Click Prompt Templates</h2>
+    <p>Professional prompts ready to use — just fill in your subject</p>
+  </div>
+
+  <div class="template-input-bar glass-card">
+    <label>Your Subject for Templates:</label>
+    <input type="text" id="template-subject" placeholder="Type your subject (e.g. a dragon, Tokyo skyline, astronaut...)" />
+  </div>
+
+  <div class="templates-grid">
+
+    <div class="template-card glass-card" data-type="universal">
+      <div class="tc-icon">🌐</div>
+      <h4>Universal Master</h4>
+      <p>Works for any subject – covers style, lighting, mood & quality</p>
+      <div class="tc-tags"><span>Realistic</span><span>4K</span><span>Any Style</span></div>
+      <button class="tc-btn" onclick="useTemplate('universal')">Use Template ✦</button>
+    </div>
+
+    <div class="template-card glass-card" data-type="realistic">
+      <div class="tc-icon">📷</div>
+      <h4>Hyper Realistic</h4>
+      <p>DSLR-quality photography with natural lighting and depth of field</p>
+      <div class="tc-tags"><span>8K</span><span>DSLR</span><span>Photo</span></div>
+      <button class="tc-btn" onclick="useTemplate('realistic')">Use Template ✦</button>
+    </div>
+
+    <div class="template-card glass-card" data-type="anime">
+      <div class="tc-icon">🌸</div>
+      <h4>Anime Style</h4>
+      <p>Vibrant studio-quality anime illustration with detailed backgrounds</p>
+      <div class="tc-tags"><span>Anime</span><span>Vibrant</span><span>Studio</span></div>
+      <button class="tc-btn" onclick="useTemplate('anime')">Use Template ✦</button>
+    </div>
+
+    <div class="template-card glass-card" data-type="logo">
+      <div class="tc-icon">💎</div>
+      <h4>Logo Design</h4>
+      <p>Modern minimalist vector logo with clean typography & branding</p>
+      <div class="tc-tags"><span>Vector</span><span>Minimal</span><span>Brand</span></div>
+      <button class="tc-btn" onclick="useTemplate('logo')">Use Template ✦</button>
+    </div>
+
+    <div class="template-card glass-card" data-type="cyberpunk">
+      <div class="tc-icon">⚡</div>
+      <h4>Cyberpunk Scene</h4>
+      <p>Neon-lit dark city with glowing futuristic cinematic elements</p>
+      <div class="tc-tags"><span>Neon</span><span>Dark City</span><span>4K</span></div>
+      <button class="tc-btn" onclick="useTemplate('cyberpunk')">Use Template ✦</button>
+    </div>
+
+    <div class="template-card glass-card" data-type="fantasy">
+      <div class="tc-icon">🧙</div>
+      <h4>Fantasy Art</h4>
+      <p>Epic magical environments with glowing effects and concept art style</p>
+      <div class="tc-tags"><span>Magic</span><span>Epic</span><span>Concept Art</span></div>
+      <button class="tc-btn" onclick="useTemplate('fantasy')">Use Template ✦</button>
+    </div>
+
+  </div>
+
+  <!-- Template Result -->
+  <div class="template-result-box glass-card" id="template-result-box" style="display:none;">
+    <div class="tr-header">
+      <span class="tr-label">✦ Your Template Prompt</span>
+      <button class="copy-btn" onclick="copyTemplatePrompt()">📋 Copy</button>
+    </div>
+    <div id="template-result-text" class="tr-text"></div>
+    <button class="btn-generate mt-16" onclick="generateFromTemplate()">🎨 Generate This Image</button>
+  </div>
+</section>
+
+<!-- ─── EDITOR SECTION ─── -->
+<section id="editor">
+  <div class="section-header">
+    <div class="section-badge">✏️ Image Editor</div>
+    <h2>Edit & Modify with AI</h2>
+    <p>Transform, enhance, and convert any image using AI prompts</p>
+  </div>
+
+  <div class="editor-grid">
+
+    <div class="editor-card glass-card">
+      <div class="ec-top">
+        <div class="ec-icon">🌄</div>
+        <div>
+          <h4>Background Changer</h4>
+          <p>Replace image background seamlessly</p>
+        </div>
+      </div>
+      <div class="upload-zone" id="upload-bg" onclick="triggerUpload('upload-bg-file')">
+        <span>📁 Upload Image (optional)</span>
+        <input type="file" id="upload-bg-file" accept="image/*" style="display:none;" onchange="previewUpload(this,'upload-bg')" />
+      </div>
+      <div class="form-group">
+        <label>Subject Description</label>
+        <input type="text" id="bg-subject" placeholder="e.g. a portrait of a woman" />
+      </div>
+      <div class="form-group">
+        <label>New Background</label>
+        <input type="text" id="bg-new" placeholder="e.g. futuristic neon city at night" />
+      </div>
+      <button class="ec-btn" onclick="buildEditorPrompt('background')">Build Prompt ✦</button>
+      <div class="ec-result" id="result-background"></div>
+    </div>
+
+    <div class="editor-card glass-card">
+      <div class="ec-top">
+        <div class="ec-icon">🗑️</div>
+        <div>
+          <h4>Object Removal</h4>
+          <p>Erase unwanted elements naturally</p>
+        </div>
+      </div>
+      <div class="upload-zone" id="upload-rem" onclick="triggerUpload('upload-rem-file')">
+        <span>📁 Upload Image (optional)</span>
+        <input type="file" id="upload-rem-file" accept="image/*" style="display:none;" onchange="previewUpload(this,'upload-rem')" />
+      </div>
+      <div class="form-group">
+        <label>What to Remove</label>
+        <input type="text" id="obj-remove" placeholder="e.g. power lines, watermark, person in background" />
+      </div>
+      <div class="form-group">
+        <label>Background to Preserve</label>
+        <input type="text" id="obj-preserve" placeholder="e.g. grassy field, white wall..." />
+      </div>
+      <button class="ec-btn" onclick="buildEditorPrompt('removal')">Build Prompt ✦</button>
+      <div class="ec-result" id="result-removal"></div>
+    </div>
+
+    <div class="editor-card glass-card">
+      <div class="ec-top">
+        <div class="ec-icon">✨</div>
+        <div>
+          <h4>Image Enhancer</h4>
+          <p>Upgrade quality to HD/4K instantly</p>
+        </div>
+      </div>
+      <div class="upload-zone" id="upload-enh" onclick="triggerUpload('upload-enh-file')">
+        <span>📁 Upload Image (optional)</span>
+        <input type="file" id="upload-enh-file" accept="image/*" style="display:none;" onchange="previewUpload(this,'upload-enh')" />
+      </div>
+      <div class="form-group">
+        <label>Image Description</label>
+        <input type="text" id="enh-desc" placeholder="e.g. an old portrait photo" />
+      </div>
+      <div class="form-group">
+        <label>Enhancement Level</label>
+        <select id="enh-level">
+          <option>HD Upscale</option>
+          <option>4K Resolution</option>
+          <option>8K Ultra</option>
+        </select>
+      </div>
+      <button class="ec-btn" onclick="buildEditorPrompt('enhance')">Build Prompt ✦</button>
+      <div class="ec-result" id="result-enhance"></div>
+    </div>
+
+    <div class="editor-card glass-card">
+      <div class="ec-top">
+        <div class="ec-icon">🎭</div>
+        <div>
+          <h4>Style Transfer</h4>
+          <p>Convert images to any artistic style</p>
+        </div>
+      </div>
+      <div class="upload-zone" id="upload-st" onclick="triggerUpload('upload-st-file')">
+        <span>📁 Upload Image (optional)</span>
+        <input type="file" id="upload-st-file" accept="image/*" style="display:none;" onchange="previewUpload(this,'upload-st')" />
+      </div>
+      <div class="form-group">
+        <label>Original Subject</label>
+        <input type="text" id="st-subject" placeholder="e.g. a cat sitting on a chair" />
+      </div>
+      <div class="form-group">
+        <label>Target Style</label>
+        <select id="st-style">
+          <option value="anime illustration">🌸 Anime</option>
+          <option value="cartoon">🎨 Cartoon</option>
+          <option value="oil painting">🖌️ Oil Painting</option>
+          <option value="cinematic movie still">🎬 Cinematic</option>
+          <option value="pencil sketch">✏️ Pencil Sketch</option>
+          <option value="watercolor art">💧 Watercolor</option>
+          <option value="cyberpunk neon art">⚡ Cyberpunk</option>
+        </select>
+      </div>
+      <button class="ec-btn" onclick="buildEditorPrompt('style')">Build Prompt ✦</button>
+      <div class="ec-result" id="result-style"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── HISTORY SECTION ─── -->
+<section id="history">
+  <div class="section-header">
+    <div class="section-badge">🕘 History</div>
+    <h2>Your Generation History</h2>
+    <p>All your generated images saved locally in this browser</p>
+  </div>
+  <div class="history-toolbar">
+    <span id="history-count" class="history-count">0 images saved</span>
+    <button class="btn-outline" style="flex:none;padding:10px 20px;" onclick="clearHistory()">🗑️ Clear All</button>
+  </div>
+  <div class="history-grid" id="history-grid">
+    <div class="history-empty" id="history-empty">
+      <div style="font-size:3rem;margin-bottom:12px;">🖼️</div>
+      <p>No images generated yet.</p>
+      <span>Generate your first image above!</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PRESENTATION SECTION ─── -->
+<section id="presentation">
+  <div class="section-header">
+    <div class="section-badge">📊 Presentation</div>
+    <h2>AI Image Generator – PRT</h2>
+    <p>A complete presentation on AI image generation technology</p>
+  </div>
+
+  <div class="slides-wrapper">
+    <div class="slide active" id="slide-1">
+      <div class="slide-number">01 / 10</div>
+      <div class="slide-content title-slide">
+        <div class="slide-icon-big">🤖</div>
+        <h2>AI Image Generator App</h2>
+        <p class="slide-tagline">Design, Edit & Modify Images Using AI</p>
+        <div class="slide-divider"></div>
+        <div class="slide-meta">Powered by Deep Learning & Neural Networks</div>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-2">
+      <div class="slide-number">02 / 10</div>
+      <div class="slide-content">
+        <h3>📖 Introduction</h3>
+        <ul class="slide-list">
+          <li><span class="li-icon">🧠</span> AI image generators create images from text prompts using deep learning</li>
+          <li><span class="li-icon">🔬</span> Powered by neural networks trained on millions of images</li>
+          <li><span class="li-icon">🎯</span> Designed for both beginners and professionals</li>
+          <li><span class="li-icon">⚡</span> Generate, edit, and modify in seconds</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-3">
+      <div class="slide-number">03 / 10</div>
+      <div class="slide-content">
+        <h3>🔑 Key Features</h3>
+        <div class="feature-grid-slide">
+          <div class="fg-item"><span>🎨</span><p>Generate images from text</p></div>
+          <div class="fg-item"><span>✏️</span><p>Edit existing images</p></div>
+          <div class="fg-item"><span>🔄</span><p>Modify backgrounds & objects</p></div>
+          <div class="fg-item"><span>🧠</span><p>Apply artistic styles</p></div>
+          <div class="fg-item"><span>📐</span><p>Multiple prompt templates</p></div>
+          <div class="fg-item"><span>💎</span><p>4K / 8K quality output</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-4">
+      <div class="slide-number">04 / 10</div>
+      <div class="slide-content">
+        <h3>🛠️ Popular AI Tools</h3>
+        <div class="tools-grid">
+          <div class="tool-item"><div class="tool-logo mj">MJ</div><span>Midjourney</span></div>
+          <div class="tool-item"><div class="tool-logo de">DΞ</div><span>DALL·E</span></div>
+          <div class="tool-item"><div class="tool-logo sd">SD</div><span>Stable Diffusion</span></div>
+          <div class="tool-item"><div class="tool-logo cv">CV</div><span>Canva AI</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-5">
+      <div class="slide-number">05 / 10</div>
+      <div class="slide-content">
+        <h3>⚙️ How It Works</h3>
+        <div class="steps-flow">
+          <div class="step-bubble"><span class="step-num">1</span><p>Enter text prompt</p></div>
+          <div class="step-arrow">→</div>
+          <div class="step-bubble"><span class="step-num">2</span><p>AI processes input</p></div>
+          <div class="step-arrow">→</div>
+          <div class="step-bubble"><span class="step-num">3</span><p>Generates image</p></div>
+          <div class="step-arrow">→</div>
+          <div class="step-bubble"><span class="step-num">4</span><p>User edits & modifies</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-6">
+      <div class="slide-number">06 / 10</div>
+      <div class="slide-content">
+        <h3>✅ Advantages</h3>
+        <ul class="slide-list accent-list">
+          <li><span class="li-icon green">⚡</span> Fast and efficient image creation</li>
+          <li><span class="li-icon green">🎓</span> No design skills required</li>
+          <li><span class="li-icon green">🌈</span> Unlimited creative freedom</li>
+          <li><span class="li-icon green">💰</span> Cost-effective alternative to designers</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-7">
+      <div class="slide-number">07 / 10</div>
+      <div class="slide-content">
+        <h3>⚠️ Limitations</h3>
+        <ul class="slide-list accent-list">
+          <li><span class="li-icon orange">📝</span> Requires well-crafted prompts for best results</li>
+          <li><span class="li-icon orange">🎯</span> Sometimes generates inaccurate images</li>
+          <li><span class="li-icon orange">⚖️</span> Ethical and copyright concerns</li>
+          <li><span class="li-icon orange">🔒</span> Data privacy and training bias issues</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-8">
+      <div class="slide-number">08 / 10</div>
+      <div class="slide-content">
+        <h3>🌍 Applications</h3>
+        <div class="apps-grid">
+          <div class="app-item"><span>📱</span><p>Social Media Posts</p></div>
+          <div class="app-item"><span>🎨</span><p>Graphic Design</p></div>
+          <div class="app-item"><span>📢</span><p>Marketing & Ads</p></div>
+          <div class="app-item"><span>🎮</span><p>Gaming & Animation</p></div>
+          <div class="app-item"><span>👗</span><p>Fashion Design</p></div>
+          <div class="app-item"><span>🏗️</span><p>Architecture & Interior</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-9">
+      <div class="slide-number">09 / 10</div>
+      <div class="slide-content">
+        <h3>🔭 Future Scope</h3>
+        <ul class="slide-list">
+          <li><span class="li-icon purple">🌟</span> More realistic and accurate image generation</li>
+          <li><span class="li-icon purple">🛠️</span> Advanced real-time editing tools</li>
+          <li><span class="li-icon purple">📱</span> Full integration with apps and websites</li>
+          <li><span class="li-icon purple">🤝</span> AI-human collaborative creative workflows</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-10">
+      <div class="slide-number">10 / 10</div>
+      <div class="slide-content conclusion-slide">
+        <div class="slide-icon-big">🚀</div>
+        <h3>Conclusion</h3>
+        <p class="conclusion-text">
+          AI image generator apps are <strong>powerful tools</strong> that make designing, editing, 
+          and modifying images <span class="accent">easy, fast, and creative</span>. 
+          As AI continues to evolve, these tools will become indispensable in every creative field.
+        </p>
+        <div class="conclusion-tags">
+          <span>#AIArt</span><span>#DeepLearning</span><span>#FutureOfDesign</span><span>#CreativeAI</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide Controls -->
+  <div class="slide-controls">
+    <button class="ctrl-btn" id="prev-btn" onclick="changeSlide(-1)" disabled>← Prev</button>
+    <div class="slide-dots" id="slide-dots"></div>
+    <button class="ctrl-btn" id="next-btn" onclick="changeSlide(1)">Next →</button>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-content">
+    <div class="footer-logo">
+      <div class="logo-icon">✦</div>
+      <span>PixelMind <span class="accent">AI</span></span>
+    </div>
+    <p class="footer-tagline">Turning imagination into visual reality — one prompt at a time.</p>
+    <div class="footer-tags">
+      <span>#AIImageGenerator</span><span>#TextToImage</span><span>#DigitalArt</span><span>#CreativeAI</span>
+    </div>
+    <p class="footer-credit">Built with ❤️ · Powered by Pollinations AI · © 2025 PixelMind AI</p>
+  </div>
+</footer>
+
+<!-- ─── TOAST NOTIFICATION ─── -->
+<div id="toast" class="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

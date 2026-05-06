@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Web Showcase | Antigravity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #030303;
+            --surface: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #ffffff;
+            --accent: #7c4dff;
+            --font-main: 'Outfit', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 20% 30%, #1a1a2e 0%, transparent 40%),
+                              radial-gradient(circle at 80% 70%, #16213e 0%, transparent 40%);
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 80px 24px; }
+        
+        header { text-align: center; margin-bottom: 80px; }
+        h1 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(3rem, 8vw, 5rem); line-height: 1; margin-bottom: 20px; }
+        h1 span { color: var(--accent); }
+        p { color: #888; font-size: 1.2rem; max-width: 600px; margin: 0 auto; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 32px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(124, 77, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .icon { font-size: 3rem; margin-bottom: 10px; }
+        h2 { font-size: 1.8rem; font-family: 'Space Grotesk', sans-serif; }
+        .tag { font-size: 0.8rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        .desc { color: #aaa; font-size: 0.95rem; }
+        
+        .btn-view {
+            margin-top: auto;
+            padding: 12px 24px;
+            background: var(--text);
+            color: var(--bg);
+            border-radius: 50px;
+            font-weight: 700;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .card:hover .btn-view {
+            background: var(--accent);
+            color: white;
+        }
+
+        footer { text-align: center; padding: 60px 0; border-top: 1px solid var(--border); margin-top: 100px; color: #555; font-size: 0.9rem; }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ELITE WEB<span>SHOWCASE</span></h1>
+            <p>A collection of premium digital experiences built with precision and modern engineering.</p>
+        </header>
+
+        <div class="grid">
+            <!-- 1. PIXELMIND -->
+            <a href="pixelmind/index.html" class="card">
+                <div class="tag">AI & Design</div>
+                <div class="icon">🎨</div>
+                <h2>PixelMind AI</h2>
+                <p class="desc">A full-scale AI image generator and editor with persistent history and variations.</p>
+                <div class="btn-view">Launch Project</div>
+            </a>
+
+            <!-- 2. AETHER -->
+            <a href="portfolio_site/index.html" class="card">
+                <div class="tag">Portfolio</div>
+                <div class="icon">🌌</div>
+                <h2>Aether Portfolio</h2>
+                <p class="desc">Ultra-modern creative landing page with glassmorphism and magnetic motion.</p>
+                <div class="btn-view">Launch Project</div>
+            </a>
+
+            <!-- 3. SWIFTSEARCH -->
+            <a href="swiftsearch/index.html" class="card">
+                <div class="tag">Utility</div>
+                <div class="icon">🔍</div>
+                <h2>SwiftSearch</h2>
+                <p class="desc">Minimalist, high-speed search portal with dynamic widgets and shortcuts.</p>
+                <div class="btn-view">Launch Project</div>
+            </a>
+
+            <!-- 4. VORTEX -->
+            <a href="vortex_finance/index.html" class="card">
+                <div class="tag">Fintech SaaS</div>
+                <div class="icon">📊</div>
+                <h2>Vortex Finance</h2>
+                <p class="desc">Elite financial dashboard with real-time data animations and asset tracking.</p>
+                <div class="btn-view">Launch Project</div>
+            </a>
+
+            <!-- 5. NOVA -->
+            <a href="nova_stream/index.html" class="card">
+                <div class="tag">Media</div>
+                <div class="icon">🎬</div>
+                <h2>Nova Stream</h2>
+                <p class="desc">Cinematic video streaming platform with immersive hero carousels.</p>
+                <div class="btn-view">Launch Project</div>
+            </a>
+
+            <!-- 6. VOGUE -->
+            <a href="vogue_vault/index.html" class="card">
+                <div class="tag">E-Commerce</div>
+                <div class="icon">👗</div>
+                <h2>Vogue Vault</h2>
+                <p class="desc">Luxury fashion store with a minimal grid and interactive shopping bag.</p>
+                <div class="btn-view">Launch Project</div>
+            </a>
+        </div>
+
+        <footer>
+            Built by Antigravity · Elite Web Showcase 2024
+        </footer>
+    </div>
+</body>
+</html>

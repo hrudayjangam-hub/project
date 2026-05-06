@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vortex Finance | Elite Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- ── SIDEBAR ── -->
+        <aside class="sidebar glass">
+            <div class="brand">
+                <div class="logo-box">V</div>
+                <span>VORTEX</span>
+            </div>
+            <nav class="side-nav">
+                <a href="#" class="nav-item active"><span class="icon">🏠</span> Dashboard</a>
+                <a href="#" class="nav-item"><span class="icon">💼</span> Portfolio</a>
+                <a href="#" class="nav-item"><span class="icon">📈</span> Market</a>
+                <a href="#" class="nav-item"><span class="icon">💱</span> Swap</a>
+                <a href="#" class="nav-item"><span class="icon">🛡️</span> Security</a>
+                <a href="#" class="nav-item"><span class="icon">⚙️</span> Settings</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-pill glass">
+                    <div class="avatar"></div>
+                    <div class="user-info">
+                        <span class="name">Alex Rivera</span>
+                        <span class="role">Pro Member</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ── MAIN CONTENT ── -->
+        <main class="main-content">
+            <!-- TOP BAR -->
+            <header class="top-bar">
+                <div class="search-bar glass">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" placeholder="Search assets, trends, or help...">
+                </div>
+                <div class="top-actions">
+                    <button class="icon-btn glass">🔔<span class="badge"></span></button>
+                    <button class="btn-primary">Deposit</button>
+                </div>
+            </header>
+
+            <!-- DASHBOARD CONTENT -->
+            <div class="dashboard-grid">
+                <!-- METRICS -->
+                <section class="metrics-row">
+                    <div class="metric-card glass">
+                        <div class="card-header">
+                            <span class="label">Total Balance</span>
+                            <span class="trend up">+12.5%</span>
+                        </div>
+                        <div class="value">$124,592.00</div>
+                        <div class="sparkline" id="spark-balance"></div>
+                    </div>
+                    <div class="metric-card glass">
+                        <div class="card-header">
+                            <span class="label">Weekly Profit</span>
+                            <span class="trend up">+5.2%</span>
+                        </div>
+                        <div class="value">$8,241.50</div>
+                        <div class="sparkline" id="spark-profit"></div>
+                    </div>
+                    <div class="metric-card glass">
+                        <div class="card-header">
+                            <span class="label">Market Cap</span>
+                            <span class="trend down">-2.1%</span>
+                        </div>
+                        <div class="value">$2.4T</div>
+                        <div class="sparkline" id="spark-market"></div>
+                    </div>
+                </section>
+
+                <!-- MAIN AREA -->
+                <div class="content-row">
+                    <!-- RECENT ACTIVITY -->
+                    <section class="table-container glass">
+                        <div class="section-header">
+                            <h3>Recent Activity</h3>
+                            <button class="text-btn">View All</button>
+                        </div>
+                        <table class="activity-table">
+                            <thead>
+                                <tr>
+                                    <th>Asset</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><div class="asset-cell"><span class="coin-icon btc">₿</span> Bitcoin</div></td>
+                                    <td>Buy</td>
+                                    <td>0.24 BTC</td>
+                                    <td><span class="status-tag success">Completed</span></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="asset-cell"><span class="coin-icon eth">Ξ</span> Ethereum</div></td>
+                                    <td>Swap</td>
+                                    <td>4.5 ETH</td>
+                                    <td><span class="status-tag success">Completed</span></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="asset-cell"><span class="coin-icon sol">S</span> Solana</div></td>
+                                    <td>Sell</td>
+                                    <td>120 SOL</td>
+                                    <td><span class="status-tag pending">Pending</span></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="asset-cell"><span class="coin-icon dot">D</span> Polkadot</div></td>
+                                    <td>Stake</td>
+                                    <td>450 DOT</td>
+                                    <td><span class="status-tag success">Completed</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <!-- ALLOCATION CHART -->
+                    <section class="chart-container glass">
+                        <div class="section-header">
+                            <h3>Asset Allocation</h3>
+                        </div>
+                        <div class="allocation-wrapper">
+                            <div class="donut-chart">
+                                <div class="donut-inner">
+                                    <span class="total">100%</span>
+                                    <span class="label">Portfolio</span>
+                                </div>
+                            </div>
+                            <div class="chart-legend">
+                                <div class="legend-item"><span class="dot btc"></span> BTC (45%)</div>
+                                <div class="legend-item"><span class="dot eth"></span> ETH (30%)</div>
+                                <div class="legend-item"><span class="dot other"></span> Others (25%)</div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

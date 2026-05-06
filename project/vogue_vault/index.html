@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vogue Vault | Luxury Fashion Store</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ── NAVIGATION ── -->
+    <nav id="navbar">
+        <div class="container">
+            <div class="nav-left">
+                <a href="#">Shop</a>
+                <a href="#">Collections</a>
+            </div>
+            <div class="logo">VOGUE<span>VAULT</span></div>
+            <div class="nav-right">
+                <a href="#">Account</a>
+                <a href="#" id="cart-btn">Cart (<span id="cart-count">0</span>)</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ── HERO ── -->
+    <header class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">ELEGANCE <br><span>REDEFINED</span></h1>
+            <p>Discover the 2024 Summer Collection. Crafted for the bold and the beautiful.</p>
+            <a href="#products" class="btn-shop">Explore Now</a>
+        </div>
+    </header>
+
+    <!-- ── PRODUCTS ── -->
+    <section id="products" class="container">
+        <div class="section-header">
+            <h2>New Arrivals</h2>
+            <div class="filters">
+                <span>Filter</span><span>Sort</span>
+            </div>
+        </div>
+        <div class="product-grid">
+            <!-- Product 1 -->
+            <div class="product-card">
+                <div class="product-img i1">
+                    <button class="add-to-cart">Quick Add</button>
+                </div>
+                <div class="product-info">
+                    <h3>Silk Evening Gown</h3>
+                    <p>$1,250</p>
+                </div>
+            </div>
+            <!-- Product 2 -->
+            <div class="product-card">
+                <div class="product-img i2">
+                    <button class="add-to-cart">Quick Add</button>
+                </div>
+                <div class="product-info">
+                    <h3>Azure Velvet Blazer</h3>
+                    <p>$890</p>
+                </div>
+            </div>
+            <!-- Product 3 -->
+            <div class="product-card">
+                <div class="product-img i3">
+                    <button class="add-to-cart">Quick Add</button>
+                </div>
+                <div class="product-info">
+                    <h3>Gold Leaf Heels</h3>
+                    <p>$640</p>
+                </div>
+            </div>
+            <!-- Product 4 -->
+            <div class="product-card">
+                <div class="product-img i4">
+                    <button class="add-to-cart">Quick Add</button>
+                </div>
+                <div class="product-info">
+                    <h3>Onyx Clutch</h3>
+                    <p>$420</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── CART SIDEBAR ── -->
+    <div id="cart-sidebar" class="glass">
+        <div class="cart-header">
+            <h3>Your Bag</h3>
+            <button id="close-cart">✕</button>
+        </div>
+        <div id="cart-items">
+            <p class="empty-msg">Your bag is currently empty.</p>
+        </div>
+        <div class="cart-footer">
+            <div class="total">Total: <span>$0.00</span></div>
+            <button class="checkout-btn">Checkout Now</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

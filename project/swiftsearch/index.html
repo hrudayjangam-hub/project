@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwiftSearch | Modern Search Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="bg-vignette"></div>
+    <div class="main-container">
+        <!-- ── HEADER WIDGETS ── -->
+        <header class="top-bar">
+            <div id="greeting" class="greeting">Good Morning</div>
+            <div id="clock" class="clock">00:00:00</div>
+        </header>
+
+        <!-- ── SEARCH CORE ── -->
+        <main class="search-section">
+            <div class="logo">Swift<span>Search</span></div>
+            <form id="search-form" class="search-box glass">
+                <div class="search-icon">🔍</div>
+                <input type="text" id="search-input" placeholder="Search anything on Google..." autocomplete="off" autofocus>
+                <button type="submit" class="search-btn">Enter</button>
+            </form>
+            <p class="search-hint">Press <span>Enter</span> to search</p>
+        </main>
+
+        <!-- ── QUICK LINKS ── -->
+        <section class="quick-links">
+            <div class="link-grid">
+                <a href="https://www.google.com" target="_blank" class="link-item glass">
+                    <div class="link-icon">G</div>
+                    <span>Google</span>
+                </a>
+                <a href="https://www.youtube.com" target="_blank" class="link-item glass">
+                    <div class="link-icon">Y</div>
+                    <span>YouTube</span>
+                </a>
+                <a href="https://www.github.com" target="_blank" class="link-item glass">
+                    <div class="link-icon">GH</div>
+                    <span>GitHub</span>
+                </a>
+                <a href="https://www.reddit.com" target="_blank" class="link-item glass">
+                    <div class="link-icon">R</div>
+                    <span>Reddit</span>
+                </a>
+                <a href="https://www.amazon.com" target="_blank" class="link-item glass">
+                    <div class="link-icon">A</div>
+                    <span>Amazon</span>
+                </a>
+                <a href="https://www.linkedin.com" target="_blank" class="link-item glass">
+                    <div class="link-icon">IN</div>
+                    <span>LinkedIn</span>
+                </a>
+                <a href="https://twitter.com" target="_blank" class="link-item glass">
+                    <div class="link-icon">X</div>
+                    <span>Twitter</span>
+                </a>
+                <a href="https://chat.openai.com" target="_blank" class="link-item glass">
+                    <div class="link-icon">AI</div>
+                    <span>ChatGPT</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- ── FOOTER ── -->
+        <footer>
+            <p>SwiftSearch Portal &copy; 2024 · Minimalist Experience</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

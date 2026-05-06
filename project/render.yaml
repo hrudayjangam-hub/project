@@ -1,0 +1,11 @@
+services:
+  - type: static
+    name: elite-web-showcase
+    env: static
+    buildCommand: ""
+    publishDir: "."
+    headers:
+      - path: /*
+        headers:
+          - key: Cache-Control
+            value: no-cache
