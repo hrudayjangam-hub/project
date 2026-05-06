@@ -1,160 +1,313 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Web Showcase | Antigravity</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #030303;
-            --surface: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
-            --text: #ffffff;
-            --accent: #7c4dff;
-            --font-main: 'Outfit', sans-serif;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: var(--font-main);
-            overflow-x: hidden;
-            background-image: radial-gradient(circle at 20% 30%, #1a1a2e 0%, transparent 40%),
-                              radial-gradient(circle at 80% 70%, #16213e 0%, transparent 40%);
-        }
-
-        .container { max-width: 1200px; margin: 0 auto; padding: 80px 24px; }
-        
-        header { text-align: center; margin-bottom: 80px; }
-        h1 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(3rem, 8vw, 5rem); line-height: 1; margin-bottom: 20px; }
-        h1 span { color: var(--accent); }
-        p { color: #888; font-size: 1.2rem; max-width: 600px; margin: 0 auto; }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 32px;
-        }
-
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 40px;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-            backdrop-filter: blur(20px);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .card:hover {
-            transform: translateY(-10px);
-            border-color: var(--accent);
-            box-shadow: 0 20px 40px rgba(124, 77, 255, 0.2);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .icon { font-size: 3rem; margin-bottom: 10px; }
-        h2 { font-size: 1.8rem; font-family: 'Space Grotesk', sans-serif; }
-        .tag { font-size: 0.8rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
-        .desc { color: #aaa; font-size: 0.95rem; }
-        
-        .btn-view {
-            margin-top: auto;
-            padding: 12px 24px;
-            background: var(--text);
-            color: var(--bg);
-            border-radius: 50px;
-            font-weight: 700;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .card:hover .btn-view {
-            background: var(--accent);
-            color: white;
-        }
-
-        footer { text-align: center; padding: 60px 0; border-top: 1px solid var(--border); margin-top: 100px; color: #555; font-size: 0.9rem; }
-
-        @media (max-width: 768px) {
-            .grid { grid-template-columns: 1fr; }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PixelMind AI – Elite AI Image Generator</title>
+  <meta name="description" content="Generate, edit, and modify stunning AI images using advanced prompts. PixelMind AI makes creative design effortless for everyone." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>ELITE WEB<span>SHOWCASE</span></h1>
-            <p>A collection of premium digital experiences built with precision and modern engineering.</p>
-        </header>
 
-        <div class="grid">
-            <!-- 1. PIXELMIND -->
-            <a href="pixelmind/index.html" class="card">
-                <div class="tag">AI & Design</div>
-                <div class="icon">🎨</div>
-                <h2>PixelMind AI</h2>
-                <p class="desc">A full-scale AI image generator and editor with persistent history and variations.</p>
-                <div class="btn-view">Launch Project</div>
-            </a>
+<!-- ─── PRELOADER ─── -->
+<div id="preloader">
+  <div class="preloader-inner">
+    <div class="preloader-ring"></div>
+    <div class="preloader-ring r2"></div>
+    <div class="preloader-ring r3"></div>
+    <p class="preloader-text">Initializing AI Engine<span class="dots">...</span></p>
+  </div>
+</div>
 
-            <!-- 2. AETHER -->
-            <a href="portfolio_site/index.html" class="card">
-                <div class="tag">Portfolio</div>
-                <div class="icon">🌌</div>
-                <h2>Aether Portfolio</h2>
-                <p class="desc">Ultra-modern creative landing page with glassmorphism and magnetic motion.</p>
-                <div class="btn-view">Launch Project</div>
-            </a>
-
-            <!-- 3. SWIFTSEARCH -->
-            <a href="swiftsearch/index.html" class="card">
-                <div class="tag">Utility</div>
-                <div class="icon">🔍</div>
-                <h2>SwiftSearch</h2>
-                <p class="desc">Minimalist, high-speed search portal with dynamic widgets and shortcuts.</p>
-                <div class="btn-view">Launch Project</div>
-            </a>
-
-            <!-- 4. VORTEX -->
-            <a href="vortex_finance/index.html" class="card">
-                <div class="tag">Fintech SaaS</div>
-                <div class="icon">📊</div>
-                <h2>Vortex Finance</h2>
-                <p class="desc">Elite financial dashboard with real-time data animations and asset tracking.</p>
-                <div class="btn-view">Launch Project</div>
-            </a>
-
-            <!-- 5. NOVA -->
-            <a href="nova_stream/index.html" class="card">
-                <div class="tag">Media</div>
-                <div class="icon">🎬</div>
-                <h2>Nova Stream</h2>
-                <p class="desc">Cinematic video streaming platform with immersive hero carousels.</p>
-                <div class="btn-view">Launch Project</div>
-            </a>
-
-            <!-- 6. VOGUE -->
-            <a href="vogue_vault/index.html" class="card">
-                <div class="tag">E-Commerce</div>
-                <div class="icon">👗</div>
-                <h2>Vogue Vault</h2>
-                <p class="desc">Luxury fashion store with a minimal grid and interactive shopping bag.</p>
-                <div class="btn-view">Launch Project</div>
-            </a>
-        </div>
-
-        <footer>
-            Built by Antigravity · Elite Web Showcase 2024
-        </footer>
+<!-- ─── AUTH MODAL ─── -->
+<div id="auth-modal" class="auth-overlay" style="display:none;">
+  <div class="auth-box glass-card">
+    <button class="auth-close" onclick="closeAuthModal()">✕</button>
+    <div class="auth-logo">✦ PixelMind <span class="accent">AI</span></div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</button>
+      <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Register</button>
     </div>
+    <div id="form-login">
+      <div class="form-group"><label>Username</label><input type="text" id="login-username" placeholder="Enter username" /></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-password" placeholder="Enter password" /></div>
+      <button class="btn-generate" style="width:100%;margin-top:8px;" onclick="doLogin()">🔑 Login</button>
+    </div>
+    <div id="form-register" style="display:none;">
+      <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" placeholder="Your name" /></div>
+      <div class="form-group"><label>Username</label><input type="text" id="reg-username" placeholder="Choose a username" /></div>
+      <div class="form-group"><label>Password</label><input type="password" id="reg-password" placeholder="Create a password" /></div>
+      <button class="btn-generate" style="width:100%;margin-top:8px;" onclick="doRegister()">🚀 Create Account</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="particles-canvas"></canvas>
+
+<!-- ─── NAV ─── -->
+<nav id="navbar">
+  <div class="nav-logo">
+    <div class="logo-icon">✦</div>
+    <span>PixelMind <span class="accent">AI</span></span>
+  </div>
+  <div class="nav-links">
+    <a href="#generator" class="nav-link">Generator</a>
+    <a href="#templates" class="nav-link">Templates</a>
+    <a href="#editor" class="nav-link">Editor</a>
+    <a href="#history" class="nav-link">History</a>
+    <a href="#presentation" class="nav-link">PRT</a>
+  </div>
+  <div class="nav-cta" id="nav-cta">
+    <span id="nav-user-info" style="display:none;" class="nav-user-info">
+      <span id="nav-username" class="nav-username"></span>
+      <button class="btn-logout" onclick="doLogout()">Logout</button>
+    </span>
+    <button class="btn-glow" id="nav-login-btn" onclick="openAuthModal()">🔑 Login</button>
+  </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section id="hero">
+  <div class="hero-bg-orb orb1"></div>
+  <div class="hero-bg-orb orb2"></div>
+  <div class="hero-bg-orb orb3"></div>
+  <div class="hero-content">
+    <div class="hero-badge">🤖 Powered by Deep Learning</div>
+    <h1 class="hero-title">
+      Create Stunning Images<br/>
+      <span class="gradient-text">With Just Words</span>
+    </h1>
+    <p class="hero-subtitle">
+      Generate, edit, and transform images using AI. Turn your imagination into 
+      professional-quality visuals in seconds — no design skills needed.
+    </p>
+    
+    <div class="hero-command-bar glass-card">
+      <div class="command-icon">✦</div>
+      <input type="text" id="hero-prompt-input" placeholder="What masterpiece should I create today? (e.g. a neon samurai in a rainy city)" />
+      <button class="btn-command" onclick="generateFromHero()">
+        <span>Generate</span>
+        <div class="cmd-shortcut">⏎</div>
+      </button>
+    </div>
+
+    <div class="hero-actions">
+      <button class="btn-secondary" onclick="scrollToSection('templates')">
+        <span>⚡ Quick Templates</span>
+      </button>
+      <button class="btn-secondary" onclick="scrollToSection('presentation')">
+        <span>📊 View PRT</span>
+      </button>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num">10+</span><span class="stat-label">Prompt Templates</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-num">4K</span><span class="stat-label">Resolution Output</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Creative Freedom</span></div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-card floating">
+      <div class="card-glow"></div>
+      <div class="image-preview-grid">
+        <div class="preview-img p1"></div>
+        <div class="preview-img p2"></div>
+        <div class="preview-img p3"></div>
+        <div class="preview-img p4"></div>
+      </div>
+      <div class="card-label">✦ AI Generated Gallery</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── GENERATOR SECTION ─── -->
+<section id="generator">
+  <div class="section-header">
+    <div class="section-badge">🎨 Image Generator</div>
+    <h2>Generate AI Images</h2>
+    <p>Describe anything and watch AI bring it to life</p>
+  </div>
+
+  <div class="generator-container">
+    <div class="prompt-panel glass-card">
+      <h3>✏️ Build Your Prompt</h3>
+      <div class="form-group">
+        <label for="subject-input">Subject / Main Idea</label>
+        <input type="text" id="subject-input" placeholder="e.g. a warrior in ancient armor, a glowing city at night..." />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="style-select">Art Style</label>
+          <select id="style-select">
+            <option value="realistic">🖼️ Realistic</option>
+            <option value="anime">🌸 Anime</option>
+            <option value="cinematic">🎬 Cinematic</option>
+            <option value="watercolor">🎨 Watercolor</option>
+            <option value="3D render">🧊 3D Render</option>
+            <option value="cyberpunk">⚡ Cyberpunk</option>
+            <option value="fantasy art">🧙 Fantasy Art</option>
+            <option value="oil painting">🖌️ Oil Painting</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="lighting-select">Lighting</label>
+          <select id="lighting-select">
+            <option value="soft">☀️ Soft</option>
+            <option value="dramatic">🎭 Dramatic</option>
+            <option value="neon">💜 Neon</option>
+            <option value="natural">🌿 Natural</option>
+            <option value="golden hour">🌅 Golden Hour</option>
+            <option value="studio">💡 Studio</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="mood-select">Mood</label>
+          <select id="mood-select">
+            <option value="aesthetic">✨ Aesthetic</option>
+            <option value="dark">🌑 Dark</option>
+            <option value="futuristic">🚀 Futuristic</option>
+            <option value="happy">😊 Happy</option>
+            <option value="mysterious">🌫️ Mysterious</option>
+            <option value="epic">⚔️ Epic</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="quality-select">Quality</label>
+          <select id="quality-select">
+            <option value="ultra-detailed, 4K resolution, sharp focus">4K Ultra</option>
+            <option value="8K resolution, photorealistic, ultra-detailed">8K Photo</option>
+            <option value="HD, professional quality">HD Pro</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="environment-input">Environment / Background <span class="label-opt">(optional)</span></label>
+        <input type="text" id="environment-input" placeholder="e.g. cyberpunk city, enchanted forest, space..." />
+      </div>
+      <div class="form-group">
+        <label for="extra-input">Extra Details <span class="label-opt">(optional)</span></label>
+        <input type="text" id="extra-input" placeholder="e.g. glowing effects, fog, dramatic shadows..." />
+      </div>
+      <div class="generated-prompt-box">
+        <div class="gp-label">📋 Generated Prompt</div>
+        <div id="generated-prompt-text" class="gp-text">Your crafted prompt will appear here...</div>
+        <button class="copy-btn" onclick="copyPrompt()" id="copy-btn">📋 Copy</button>
+      </div>
+      <div class="action-buttons">
+        <button class="btn-build" onclick="buildPrompt()">⚡ Build Prompt</button>
+        <button class="btn-generate" onclick="generateImage()">🎨 Generate Image</button>
+      </div>
+    </div>
+
+    <div class="output-panel glass-card">
+      <h3>🖼️ Generated Output</h3>
+      <div class="image-output-area" id="image-output-area">
+        <div class="output-placeholder" id="output-placeholder">
+          <div class="placeholder-icon">🎨</div>
+          <p>Your AI-generated image will appear here</p>
+          <span>Fill in the details and click Generate</span>
+        </div>
+        <img id="generated-image" src="" alt="Generated AI Image" style="display:none;" />
+        <div class="image-loader" id="image-loader" style="display:none;">
+          <div class="loader-spinner"></div>
+          <p>AI is creating your masterpiece...</p>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
+      </div>
+      <div class="output-actions" id="output-actions" style="display:none;">
+        <button class="btn-outline" onclick="downloadFiltered()">⬇️ Download</button>
+        <button class="btn-outline" onclick="shareImage()">🔗 Share URL</button>
+        <button class="btn-outline" onclick="generateImage()">🔄 Regenerate</button>
+        <button class="btn-outline" onclick="generateVariations()">🎲 Variations</button>
+      </div>
+      <div class="filter-panel" id="filter-panel" style="display:none;">
+        <div class="filter-title">🎨 Image Filters</div>
+        <div class="filter-row"><label>Brightness</label><input type="range" id="f-brightness" min="0" max="200" value="100" oninput="applyFilters()"><span id="v-brightness">100</span>%</div>
+        <div class="filter-row"><label>Contrast</label><input type="range" id="f-contrast" min="0" max="200" value="100" oninput="applyFilters()"><span id="v-contrast">100</span>%</div>
+        <div class="filter-row"><label>Saturation</label><input type="range" id="f-saturation" min="0" max="200" value="100" oninput="applyFilters()"><span id="v-saturation">100</span>%</div>
+        <div class="filter-row"><label>Sharpness</label><input type="range" id="f-blur" min="0" max="10" value="0" step="0.5" oninput="applyFilters()"><span id="v-blur">0</span></div>
+        <button class="filter-reset" onclick="resetFilters()">↺ Reset</button>
+      </div>
+      <div class="variations-panel" id="variations-panel" style="display:none;">
+        <div class="filter-title">🎲 Variations</div>
+        <div class="variations-grid" id="variations-grid"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="templates">
+  <div class="section-header">
+    <div class="section-badge">⚡ Quick Templates</div>
+    <h2>One-Click Prompt Templates</h2>
+    <p>Professional prompts ready to use — just fill in your subject</p>
+  </div>
+  <div class="template-input-bar glass-card">
+    <label>Your Subject for Templates:</label>
+    <input type="text" id="template-subject" placeholder="Type your subject (e.g. a dragon, Tokyo skyline, astronaut...)" />
+  </div>
+  <div class="templates-grid">
+    <div class="template-card glass-card" data-type="universal"><div class="tc-icon">🌐</div><h4>Universal Master</h4><p>Works for any subject – covers style, lighting, mood & quality</p><button class="tc-btn" onclick="useTemplate('universal')">Use Template ✦</button></div>
+    <div class="template-card glass-card" data-type="realistic"><div class="tc-icon">📷</div><h4>Hyper Realistic</h4><p>DSLR-quality photography with natural lighting</p><button class="tc-btn" onclick="useTemplate('realistic')">Use Template ✦</button></div>
+    <div class="template-card glass-card" data-type="anime"><div class="tc-icon">🌸</div><h4>Anime Style</h4><p>Vibrant studio-quality anime illustration</p><button class="tc-btn" onclick="useTemplate('anime')">Use Template ✦</button></div>
+    <div class="template-card glass-card" data-type="logo"><div class="tc-icon">💎</div><h4>Logo Design</h4><p>Modern minimalist vector logo design</p><button class="tc-btn" onclick="useTemplate('logo')">Use Template ✦</button></div>
+  </div>
+</section>
+
+<section id="editor">
+  <div class="section-header">
+    <div class="section-badge">✏️ Image Editor</div>
+    <h2>Edit & Modify with AI</h2>
+  </div>
+  <div class="editor-grid">
+    <div class="editor-card glass-card">
+      <h4>🌄 Background Changer</h4>
+      <input type="text" id="bg-subject" placeholder="e.g. a portrait of a woman" />
+      <input type="text" id="bg-new" placeholder="e.g. futuristic neon city" />
+      <button class="ec-btn" onclick="buildEditorPrompt('background')">Build Prompt ✦</button>
+      <div class="ec-result" id="result-background"></div>
+    </div>
+    <div class="editor-card glass-card">
+      <h4>🗑️ Object Removal</h4>
+      <input type="text" id="obj-remove" placeholder="e.g. power lines" />
+      <button class="ec-btn" onclick="buildEditorPrompt('removal')">Build Prompt ✦</button>
+      <div class="ec-result" id="result-removal"></div>
+    </div>
+  </div>
+</section>
+
+<section id="history">
+  <div class="section-header">
+    <div class="section-badge">🕘 History</div>
+    <h2>Your History</h2>
+  </div>
+  <div class="history-grid" id="history-grid">
+    <div class="history-empty" id="history-empty">No images yet.</div>
+  </div>
+</section>
+
+<section id="presentation">
+  <div class="section-header">
+    <h2>AI Technology – PRT</h2>
+  </div>
+  <div class="slides-wrapper">
+    <div class="slide active">Slide Content Loaded via JS</div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">✦ PixelMind AI</div>
+  <p>© 2025 PixelMind AI · Built with ❤️</p>
+</footer>
+
+<div id="toast" class="toast"></div>
+
+<script src="app.js"></script>
 </body>
 </html>
