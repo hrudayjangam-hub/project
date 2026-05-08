@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#06060f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>PixelMind AI – Image & Video Studio</title>
   <meta name="description" content="Generate AI images, create animations, upload and edit images and videos with AI filters." />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
@@ -195,7 +198,7 @@
           <!-- Preview -->
           <div class="editor-preview glass-card">
             <canvas id="edit-canvas" style="display:none;"></canvas>
-            <video id="edit-video" style="display:none;" controls loop></video>
+            <video id="edit-video" style="display:none;" controls loop playsinline webkit-playsinline></video>
             <div class="editor-overlay-badge" id="media-type-badge"></div>
           </div>
 
