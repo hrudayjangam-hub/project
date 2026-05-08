@@ -101,15 +101,35 @@ const MAGIC = [
   'studio photography, soft bokeh',
   'analog film, vintage 35mm'
 ];
-function magicExpand() {
+async function magicExpand() {
   const inp = document.getElementById('main-input');
   if (!inp || !inp.value.trim()) { showToast('Type a prompt first!', 'error'); return; }
+  if (getOpenRouterKey()) {
+    try {
+      showToast('✦ AI enhancing prompt...', 'success');
+      const enhanced = await callOpenRouter([
+        { role: 'system', content: 'You are a prompt engineering expert. Enhance the given image prompt with cinematic details, lighting, mood, and style. Reply ONLY with the enhanced prompt, no explanation.' },
+        { role: 'user', content: inp.value.trim() }
+      ]);
+      if (enhanced) { inp.value = enhanced; showToast('✦ AI-enhanced prompt ready!', 'success'); return; }
+    } catch { /* fallback to basic */ }
+  }
   inp.value = inp.value.trim() + ', ' + MAGIC[Math.floor(Math.random() * MAGIC.length)];
   showToast('✦ Prompt enhanced!', 'success');
 }
-function magicExpandVideo() {
+async function magicExpandVideo() {
   const inp = document.getElementById('video-prompt');
   if (!inp || !inp.value.trim()) { showToast('Type a prompt first!', 'error'); return; }
+  if (getOpenRouterKey()) {
+    try {
+      showToast('✦ AI enhancing prompt...', 'success');
+      const enhanced = await callOpenRouter([
+        { role: 'system', content: 'You are a prompt engineering expert. Enhance the given video/animation prompt with cinematic details, lighting, mood transitions, and style. Reply ONLY with the enhanced prompt, no explanation.' },
+        { role: 'user', content: inp.value.trim() }
+      ]);
+      if (enhanced) { inp.value = enhanced; showToast('✦ AI-enhanced prompt ready!', 'success'); return; }
+    } catch { /* fallback to basic */ }
+  }
   inp.value = inp.value.trim() + ', ' + MAGIC[Math.floor(Math.random() * MAGIC.length)];
   showToast('✦ Prompt enhanced!', 'success');
 }
@@ -222,7 +242,7 @@ function shareImage() {
   navigator.clipboard.writeText(generatedImageUrl).then(() => showToast('URL copied!', 'success'));
 }
 
-/* ── AI VIDEO GENERATOR (Real 12s Canvas Video) ── */
+/* ── AI VIDEO GENERATOR ── */
 async function generateAnimation() {
   const inp = document.getElementById('video-prompt');
   const text = inp ? inp.value.trim() : '';
@@ -237,17 +257,17 @@ async function generateAnimation() {
   const playerEl = document.getElementById('anim-player');
   const msgEl    = document.getElementById('anim-loader-msg');
   const bar      = document.getElementById('anim-progress');
+  const vidEl    = document.getElementById('anim-video');
 
   if (loaderEl) loaderEl.style.display = 'block';
   if (phEl)     phEl.style.display = 'none';
   if (playerEl) playerEl.style.display = 'none';
 
   const total = selectedFrames;
-  // Resolution logic: 720 -> 1280x720, 1080 -> 1920x1080, 1440 -> 2560x1440
   const W = Math.round(selectedRes * (16 / 9));
   const H = selectedRes;
 
-  if (voiceEnabled) speak(`Generating your ${total} frame animation in ${H}p resolution. This will take about a minute.`);
+  if (voiceEnabled) speak(`Generating video in ${H}p.`);
 
   const styleShifts = [
     'dawn light, mist rising', 'golden hour glow, warm tones',
@@ -257,134 +277,101 @@ async function generateAnimation() {
     'vibrant colors, vivid', 'moody blue hour, atmospheric'
   ];
 
-  const frameImages = [];
+  const frames = [];
+  if (msgEl) msgEl.textContent = 'Generating video...';
+  if (bar) { bar.style.transition = 'none'; bar.style.width = '5%'; void bar.offsetWidth; }
 
-  // Load frames SEQUENTIALLY to avoid API rate limiting
-  for (let i = 0; i < total; i++) {
-    if (msgEl) msgEl.textContent = `Loading frame ${i + 1} of ${total}...`;
-    if (bar) bar.style.width = Math.round(((i) / total) * 50) + '%';
-
-    const prompt = `${text}, ${styleShifts[i % styleShifts.length]}, masterpiece, cinematic, ultra-detailed, 8k`;
-    const seed = Math.floor(Math.random() * 999999) + i * 1337;
-    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${W}&height=${H}&seed=${seed}&nologo=true&t=${Date.now() + i}`;
-
-    await new Promise(resolve => {
+  function loadImg(i) {
+    return new Promise(resolve => {
+      const prompt = `${text}, ${styleShifts[i % styleShifts.length]}, masterpiece, cinematic, ultra-detailed, 8k`;
+      const seed = Math.floor(Math.random() * 999999) + i * 1337;
+      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${W}&height=${H}&seed=${seed}&nologo=true&t=${Date.now() + i}`;
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      img.onload = () => { frameImages.push(img); resolve(); };
+      img.onload = () => { frames[i] = img; resolve(); };
       img.onerror = () => {
+        const altUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(text + ', cinematic, masterpiece')}?width=${W}&height=${H}&seed=${seed + 9999}&nologo=true`;
         const img2 = new Image();
         img2.crossOrigin = 'anonymous';
-        img2.onload = () => { frameImages.push(img2); resolve(); };
+        img2.onload = () => { frames[i] = img2; resolve(); };
         img2.onerror = () => { resolve(); };
-        img2.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(text + ', cinematic, masterpiece')}?width=${W}&height=${H}&seed=${seed + 9999}&nologo=true`;
+        img2.src = altUrl;
       };
       img.src = url;
     });
   }
 
-  const valid = frameImages.filter(Boolean);
+  let done = 0;
+  for (let i = 0; i < total; i += 3) {
+    const batch = [];
+    for (let j = i; j < Math.min(i + 3, total); j++) batch.push(loadImg(j));
+    await Promise.all(batch);
+    done += batch.length;
+    if (bar) bar.style.width = Math.round((done / total) * 40) + '%';
+  }
+
+  const valid = frames.filter(Boolean);
   if (valid.length === 0) {
     if (loaderEl) loaderEl.style.display = 'none';
     if (phEl) phEl.style.display = 'block';
-    showToast('Failed to load frames. Check connection.', 'error');
+    showToast('Failed to generate frames. Try again.', 'error');
     btn.disabled = false; btn.textContent = 'Animate ▶';
     return;
   }
 
-  if (msgEl) msgEl.textContent = `Recording 12-second video (${valid.length} frames)...`;
+  const TOTAL_MS = 10000;
+  if (msgEl) msgEl.textContent = `Building ${Math.round(TOTAL_MS/1000)}s video...`;
+  if (bar) { bar.style.transition = 'none'; bar.style.width = '45%'; void bar.offsetWidth; }
 
-  // ── AI AUDIO INJECTION ──
-  let audioTrack = null;
-  if (voiceEnabled) {
-    try {
-      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text.substring(0, 200))}&tl=en&client=tw-ob`;
-      const audio = new Audio(ttsUrl);
-      audio.crossOrigin = "anonymous";
-      
-      // We need to wait for audio to be ready to capture its stream
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const source = audioCtx.createMediaElementSource(audio);
-      const dest = audioCtx.createMediaStreamDestination();
-      source.connect(dest);
-      source.connect(audioCtx.destination);
-      audioTrack = dest.stream.getAudioTracks()[0];
-      
-      // Start playing when recording starts
-      audio.play();
-    } catch (e) {
-      console.warn("Audio capture failed, recording silent video", e);
-    }
-  }
-
-  // Setup canvas
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
+  if (!ctx) { showToast('Canvas error', 'error'); btn.disabled = false; btn.textContent = 'Animate ▶'; return; }
 
-  // Detect supported mime type
   const mimes = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
   const mime = mimes.find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm';
+  const totalFrames = Math.round(30 * TOTAL_MS / 1000);
+  let chunks = [];
+  let frameIndex = 0;
 
-  const videoStream = canvas.captureStream(30);
-  
-  // MERGE STREAMS: Video + Audio (if enabled)
-  const combinedStream = new MediaStream([
-    videoStream.getVideoTracks()[0],
-    ...(audioTrack ? [audioTrack] : [])
-  ]);
-
-  const recorder = new MediaRecorder(combinedStream, { mimeType: mime, videoBitsPerSecond: 3000000 });
-  const chunks = [];
+  const stream = canvas.captureStream(30);
+  const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 3000000 });
   recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
-
-  const TARGET_DURATION = 12000; // 12 seconds minimum
-  const timePerFrame = Math.floor(TARGET_DURATION / valid.length);
-  const transMs = Math.floor(timePerFrame * 0.7);
-  const totalVideoMs = valid.length * timePerFrame;
-
   recorder.onstop = () => {
-    videoBlob = new Blob(chunks, { type: mime });
-    const vidUrl = URL.createObjectURL(videoBlob);
+    const blob = new Blob(chunks, { type: mime });
+    videoBlob = blob;
+    const url = URL.createObjectURL(blob);
     if (loaderEl) loaderEl.style.display = 'none';
     if (playerEl) playerEl.style.display = 'flex';
     if (bar) { bar.style.transition = 'width 0.3s'; bar.style.width = '100%'; }
-    const vidEl = document.getElementById('anim-video');
-    if (vidEl) { vidEl.src = vidUrl; vidEl.play(); }
-    showToast(`✦ ${Math.round(totalVideoMs/1000)}s AI video ready!`, 'success');
-    if (voiceEnabled) speak("Your AI video is ready for viewing and download.");
+    if (vidEl) { vidEl.src = url; vidEl.play(); }
+    showToast(`✦ ${Math.round(TOTAL_MS/1000)}s AI video ready!`, 'success');
+    if (voiceEnabled) speak("Your AI video is ready.");
     btn.disabled = false; btn.textContent = 'Animate ▶';
   };
 
-  recorder.start(200);
+  recorder.start(100);
 
-  let startTime = null;
-  function renderFrame(ts) {
-    if (!startTime) startTime = ts;
-    const elapsed = ts - startTime;
-    const progress = Math.min(elapsed / totalVideoMs, 1);
-    if (bar) bar.style.width = Math.round(50 + progress * 50) + '%';
-
-    const cyclePos = elapsed % timePerFrame;
-    const curIdx   = Math.min(Math.floor(elapsed / timePerFrame), valid.length - 1);
-    const nextIdx  = (curIdx + 1) % valid.length;
-    const alpha    = Math.min(cyclePos / transMs, 1);
-
+  const tick = setInterval(() => {
+    const progress = frameIndex / totalFrames;
+    if (bar) bar.style.width = Math.round(45 + progress * 55) + '%';
+    const fpv = totalFrames / valid.length;
+    const curIdx = Math.min(Math.floor(frameIndex / fpv), valid.length - 1);
+    const nextIdx = Math.min(curIdx + 1, valid.length - 1);
+    const alpha = ((frameIndex % fpv) / fpv) * (valid.length > 1 ? 1 : 0);
+    ctx.clearRect(0, 0, W, H);
     ctx.drawImage(valid[curIdx], 0, 0, W, H);
     if (alpha > 0 && curIdx !== nextIdx) {
-      ctx.globalAlpha = alpha;
+      ctx.globalAlpha = Math.min(alpha * 2, 1);
       ctx.drawImage(valid[nextIdx], 0, 0, W, H);
       ctx.globalAlpha = 1;
     }
-
-    if (elapsed < totalVideoMs) {
-      requestAnimationFrame(renderFrame);
-    } else {
-      ctx.drawImage(valid[valid.length - 1], 0, 0, W, H);
-      setTimeout(() => recorder.stop(), 600);
+    frameIndex++;
+    if (frameIndex >= totalFrames) {
+      clearInterval(tick);
+      setTimeout(() => recorder.stop(), 200);
     }
-  }
-  requestAnimationFrame(renderFrame);
+  }, 1000 / 30);
 }
 
 function downloadVideoFile() {
@@ -551,6 +538,166 @@ function showToast(msg, type = '') {
   const t = document.getElementById('toast'); if (!t) return;
   t.textContent = msg; t.className = 'toast ' + type + ' show';
   setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+/* ════════════════════════════════════════
+   OPENROUTER AI INTEGRATION
+   ════════════════════════════════════════ */
+
+const OR_KEY = 'pm_openrouter_key';
+const OR_MODEL = 'pm_openrouter_model';
+
+function getOpenRouterKey() {
+  return localStorage.getItem(OR_KEY) || '';
+}
+
+function getOpenRouterModel() {
+  return localStorage.getItem(OR_MODEL) || 'mistralai/mistral-7b-instruct:free';
+}
+
+function openSettings() {
+  const modal = document.getElementById('settings-modal');
+  if (!modal) return;
+  const keyInput = document.getElementById('or-api-key');
+  const modelSelect = document.getElementById('or-model');
+  if (keyInput) keyInput.value = getOpenRouterKey();
+  if (modelSelect) modelSelect.value = getOpenRouterModel();
+  modal.style.display = 'flex';
+}
+
+function closeSettings() {
+  document.getElementById('settings-modal').style.display = 'none';
+}
+
+function saveOpenRouterSettings() {
+  const key = document.getElementById('or-api-key').value.trim();
+  const model = document.getElementById('or-model').value;
+  localStorage.setItem(OR_KEY, key);
+  localStorage.setItem(OR_MODEL, model);
+  document.getElementById('or-status').textContent = key ? '✓ Settings saved!' : '✓ API key cleared';
+  showToast('⚙️ OpenRouter settings saved!', 'success');
+}
+
+async function callOpenRouter(messages) {
+  const key = getOpenRouterKey();
+  if (!key) {
+    showToast('Set your OpenRouter API key in Settings (⚙️)', 'error');
+    return null;
+  }
+  const model = getOpenRouterModel();
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`,
+        'X-Title': 'PixelMind AI'
+      },
+      body: JSON.stringify({ model, messages, max_tokens: 300, temperature: 0.8 })
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content?.trim() || null;
+  } catch (e) {
+    showToast('OpenRouter API error: ' + e.message, 'error');
+    return null;
+  }
+}
+
+/* ── AI ASSISTANT CHAT ── */
+let chatHistory = [];
+
+function openAIAssistant() {
+  const modal = document.getElementById('ai-assistant-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeAIAssistant() {
+  document.getElementById('ai-assistant-modal').style.display = 'none';
+}
+
+function addChatMessage(text, role) {
+  const box = document.getElementById('chat-box');
+  if (!box) return;
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  div.textContent = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  if (!getOpenRouterKey()) {
+    showToast('Set your OpenRouter API key in Settings (⚙️)', 'error');
+    return;
+  }
+  input.value = '';
+  addChatMessage(text, 'user');
+  chatHistory.push({ role: 'user', content: text });
+
+  const systemMsg = { role: 'system', content: 'You are a creative AI assistant for PixelMind AI Studio. Help users brainstorm and refine image/video generation prompts. Be concise, imaginative, and practical. Suggest specific visual details, styles, and techniques.' };
+  const msgs = [systemMsg, ...chatHistory.slice(-10)];
+
+  addChatMessage('Thinking...', 'bot');
+  const reply = await callOpenRouter(msgs);
+  const botMsgs = document.querySelectorAll('.chat-msg.bot');
+  if (botMsgs.length > 0) botMsgs[botMsgs.length - 1].remove();
+
+  if (reply) {
+    addChatMessage(reply, 'bot');
+    chatHistory.push({ role: 'assistant', content: reply });
+  } else {
+    addChatMessage('Sorry, I hit an error. Check your API key and try again.', 'bot');
+  }
+}
+
+function useChatPrompt() {
+  const lastBotMsg = document.querySelector('.chat-box .chat-msg.bot:last-child');
+  if (!lastBotMsg) { showToast('No AI response to use!', 'error'); return; }
+  const text = lastBotMsg.textContent;
+  const inp = document.getElementById('main-input');
+  if (inp) inp.value = text;
+  document.getElementById('ai-assistant-modal').style.display = 'none';
+  switchMode('image');
+  showToast('📋 Prompt loaded from AI!', 'success');
+}
+
+function clearChat() {
+  chatHistory = [];
+  const box = document.getElementById('chat-box');
+  if (box) box.innerHTML = '<div class="chat-msg bot"><span>Hi! I\'m your AI assistant. Tell me what you want to create and I\'ll help craft the perfect prompt.</span></div>';
+}
+
+/* ── AI AUTO-SUGGEST (replaces random suggestions when API key is set) ── */
+async function suggestPrompt(type) {
+  if (getOpenRouterKey()) {
+    try {
+      showToast('🤖 AI generating suggestion...', 'success');
+      const reply = await callOpenRouter([
+        { role: 'system', content: 'You are a creative prompt suggester for an AI image generator. Suggest one short, vivid, imaginative image prompt (max 15 words). Reply ONLY with the prompt, no quotes or explanation.' },
+        { role: 'user', content: `Suggest a ${type === 'image' ? 'stunning image' : 'cinematic animation'} prompt` }
+      ]);
+      if (reply) {
+        const id = type === 'image' ? 'main-input' : 'video-prompt';
+        const inp = document.getElementById(id);
+        if (inp) { inp.value = reply; showToast('✦ AI suggested a prompt!', 'success'); return; }
+      }
+    } catch { /* fallback */ }
+  }
+  const prompt = SUGGESTIONS[Math.floor(Math.random() * SUGGESTIONS.length)];
+  const id = type === 'image' ? 'main-input' : 'video-prompt';
+  const inp = document.getElementById(id);
+  if (inp) {
+    inp.value = prompt;
+    showToast('✦ Suggested a cool idea!', 'success');
+    if (voiceEnabled) speak(`How about: ${prompt}`);
+  }
 }
 
 document.getElementById('media-upload')?.addEventListener('change', (e) => handleFileSelect(e.target));
