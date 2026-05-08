@@ -1,900 +1,562 @@
-/* ══════════════════════════════════════
-   PixelMind AI – app.js
-   Full application logic
-══════════════════════════════════════ */
-
+/* PixelMind AI – app.js */
 'use strict';
 
-/* ─── STATE ─── */
-let currentPrompt = '';
-let templatePrompt = '';
-let currentSlide = 0;
-const TOTAL_SLIDES = 10;
+/* STATE */
 let generatedImageUrl = '';
+let selectedSize = '1024x1024';
+let selectedQuality = 'standard';
+let selectedFrames = 6;
+let selectedRes = 720;
+let isGenerating = false;
+let videoBlob = null;
+let currentMediaType = 'image';
+let voiceEnabled = false;
 
-/* ─── PRELOADER ─── */
+/* PRELOADER */
 window.addEventListener('load', () => {
   setTimeout(() => {
-    const preloader = document.getElementById('preloader');
-    preloader.classList.add('hidden');
-    setTimeout(() => preloader.remove(), 700);
+    const pre = document.getElementById('preloader');
+    if (pre) { pre.classList.add('hidden'); setTimeout(() => pre.remove(), 700); }
     initParticles();
-    initSlides();
-    buildPrompt();
-  }, 1800);
+    renderHistory();
+    const inp = document.getElementById('main-input');
+    if (inp) inp.focus();
+  }, 1000);
 });
 
-/* ── NAVBAR SCROLL & MOBILE TOGGLE ── */
-window.addEventListener('scroll', () => {
-  const nav = document.getElementById('navbar');
-  if (window.scrollY > 60) nav.classList.add('scrolled');
-  else nav.classList.remove('scrolled');
-});
-
-// Mobile Menu Toggle
-const navToggle = document.getElementById('nav-toggle');
-const navLinks = document.querySelector('.nav-links');
-
-if (navToggle) {
-  navToggle.addEventListener('click', () => {
-    navToggle.classList.toggle('active');
-    navLinks.classList.toggle('active');
-  });
-}
-
-// Close menu when clicking links
-document.querySelectorAll('.nav-link').forEach(link => {
-  link.addEventListener('click', () => {
-    navToggle.classList.remove('active');
-    navLinks.classList.remove('active');
-  });
-});
-
-/* ─── SMOOTH SCROLL ─── */
-function scrollToSection(id) {
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-/* ═══════════════════════════════════════
-   PARTICLES CANVAS
-═══════════════════════════════════════ */
+/* PARTICLES */
 function initParticles() {
   const canvas = document.getElementById('particles-canvas');
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
   let W = canvas.width = window.innerWidth;
   let H = canvas.height = window.innerHeight;
-
   window.addEventListener('resize', () => {
     W = canvas.width = window.innerWidth;
     H = canvas.height = window.innerHeight;
   });
-
-  const COUNT = 80;
-  const particles = Array.from({ length: COUNT }, () => ({
-    x: Math.random() * W,
-    y: Math.random() * H,
-    r: Math.random() * 1.8 + 0.3,
-    dx: (Math.random() - 0.5) * 0.4,
-    dy: (Math.random() - 0.5) * 0.4,
-    alpha: Math.random() * 0.5 + 0.1,
-    color: ['#a855f7', '#6366f1', '#ec4899', '#8b5cf6'][Math.floor(Math.random() * 4)]
+  const pts = Array.from({ length: 55 }, () => ({
+    x: Math.random() * W, y: Math.random() * H,
+    r: Math.random() * 1.5 + 0.3,
+    dx: (Math.random() - 0.5) * 0.3, dy: (Math.random() - 0.5) * 0.3,
+    a: Math.random() * 0.4 + 0.1,
+    c: ['#a855f7', '#6366f1', '#ec4899'][Math.floor(Math.random() * 3)]
   }));
-
-  function drawParticles() {
+  (function draw() {
     ctx.clearRect(0, 0, W, H);
-    particles.forEach(p => {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = p.color;
-      ctx.globalAlpha = p.alpha;
-      ctx.fill();
-      p.x += p.dx;
-      p.y += p.dy;
+    pts.forEach(p => {
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.c; ctx.globalAlpha = p.a; ctx.fill();
+      p.x += p.dx; p.y += p.dy;
       if (p.x < 0 || p.x > W) p.dx *= -1;
       if (p.y < 0 || p.y > H) p.dy *= -1;
     });
-
     ctx.globalAlpha = 1;
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 100) {
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = 'rgba(168,85,247,' + (0.08 * (1 - dist / 100)) + ')';
-          ctx.lineWidth = 0.6;
-          ctx.stroke();
-        }
-      }
-    }
-    requestAnimationFrame(drawParticles);
+    requestAnimationFrame(draw);
+  })();
+}
+
+/* NAV */
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  if (nav) nav.classList.toggle('scrolled', window.scrollY > 60);
+});
+
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+/* MODE SWITCHING */
+function switchMode(mode) {
+  document.getElementById('mode-image').style.display = mode === 'image' ? 'flex' : 'none';
+  document.getElementById('mode-video').style.display = mode === 'video' ? 'flex' : 'none';
+  document.getElementById('tab-img').classList.toggle('active', mode === 'image');
+  document.getElementById('tab-vid').classList.toggle('active', mode === 'video');
+}
+
+function switchStudio(panel) {
+  document.getElementById('studio-generate').style.display = panel === 'generate' ? 'flex' : 'none';
+  document.getElementById('studio-edit').style.display = panel === 'edit' ? 'flex' : 'none';
+  document.getElementById('stab-gen').classList.toggle('active', panel === 'generate');
+  document.getElementById('stab-edit').classList.toggle('active', panel === 'edit');
+}
+
+/* CHIP SELECTION */
+function selectChip(el, type) {
+  el.closest('.chip-row').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  if (type === 'size') selectedSize = el.dataset.size;
+  if (type === 'quality') selectedQuality = el.dataset.quality;
+  if (type === 'frames') selectedFrames = parseInt(el.dataset.frames);
+  if (type === 'res') selectedRes = parseInt(el.dataset.res);
+}
+
+/* MAGIC EXPAND */
+const MAGIC = [
+  'cinematic lighting, 8k, masterpiece',
+  'hyper-realistic, ray tracing, sharp focus',
+  'cyberpunk aesthetic, neon glows',
+  'ethereal fantasy, concept art',
+  'studio photography, soft bokeh',
+  'analog film, vintage 35mm'
+];
+function magicExpand() {
+  const inp = document.getElementById('main-input');
+  if (!inp || !inp.value.trim()) { showToast('Type a prompt first!', 'error'); return; }
+  inp.value = inp.value.trim() + ', ' + MAGIC[Math.floor(Math.random() * MAGIC.length)];
+  showToast('✦ Prompt enhanced!', 'success');
+}
+function magicExpandVideo() {
+  const inp = document.getElementById('video-prompt');
+  if (!inp || !inp.value.trim()) { showToast('Type a prompt first!', 'error'); return; }
+  inp.value = inp.value.trim() + ', ' + MAGIC[Math.floor(Math.random() * MAGIC.length)];
+  showToast('✦ Prompt enhanced!', 'success');
+}
+
+/* ── AUTO SUGGEST ── */
+const SUGGESTIONS = [
+  'A floating city in the clouds with waterfalls of light',
+  'Cyberpunk street market at night, rain, neon signs',
+  'Interstellar journey through a nebula of glowing stars',
+  'Medieval castle carved into a giant redwood tree',
+  'Ancient ruins of a futuristic civilization in a desert',
+  'Underwater bioluminescent forest with alien sea life',
+  'Steampunk airship fleet sailing over a snowy peak',
+  'Minimalist zen garden on the moon with earth in background',
+  'Epic dragon made of volcanic glass and flowing lava',
+  'Time-traveler portal opening in a 1920s jazz club'
+];
+function suggestPrompt(type) {
+  const prompt = SUGGESTIONS[Math.floor(Math.random() * SUGGESTIONS.length)];
+  const id = type === 'image' ? 'main-input' : 'video-prompt';
+  const inp = document.getElementById(id);
+  if (inp) {
+    inp.value = prompt;
+    showToast('✦ Suggested a cool idea!', 'success');
+    if (voiceEnabled) speak(`How about: ${prompt}`);
   }
-  drawParticles();
 }
 
-/* ═══════════════════════════════════════
-   PROMPT BUILDER
-═══════════════════════════════════════ */
-/* ═══════════════════════════════════════
-   PROMPT BUILDER (ZEN MODE)
-═══════════════════════════════════════ */
-function buildPrompt() {
-  const subject = document.getElementById('subject-input').value.trim() || '[your subject]';
-
-  // --- PROMPT BOOSTER ---
-  // Background intelligence to ensure elite quality
-  const qualityBooster = ', masterpiece, highly detailed, sharp focus, intricate textures, professional lighting, 8k resolution, ray tracing, volumetric lighting';
-  
-  let prompt = 'Create an elite image of ' + subject;
-  prompt += qualityBooster;
-  
-  // --- NEGATIVE PROMOTING ---
-  prompt += ' --no blurry, deformed, low quality, distorted hands, extra fingers, messy face, text, watermark, grainy, bad anatomy';
-
-  currentPrompt = prompt;
-  return prompt;
+/* ── AI VOICE ── */
+function toggleVoice() {
+  voiceEnabled = !voiceEnabled;
+  const btn = document.getElementById('voice-btn');
+  if (btn) btn.classList.toggle('active', voiceEnabled);
+  showToast(voiceEnabled ? '🎙️ AI Voice Enabled' : '🎙️ AI Voice Disabled', 'success');
+  if (voiceEnabled) speak("AI Voice active. I will narrate your creations.");
 }
 
-// Single listener for the Zen Mode input
-var subjectInput = document.getElementById('subject-input');
-if (subjectInput) {
-  subjectInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') generateImage();
-  });
+function speak(text) {
+  if (!voiceEnabled || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 1.0; u.pitch = 1.1;
+  const voices = window.speechSynthesis.getVoices();
+  // Try to find a premium neural-sounding voice
+  u.voice = voices.find(v => v.name.includes('Google') || v.name.includes('Natural')) || voices[0];
+  window.speechSynthesis.speak(u);
 }
 
-/* ─── COPY PROMPT ─── */
-function copyPrompt() {
-  if (!currentPrompt || currentPrompt.includes('[your subject]')) {
-    showToast('Please build a prompt first!', 'error');
-    return;
-  }
-  navigator.clipboard.writeText(currentPrompt).then(function() {
-    showToast('Prompt copied to clipboard!', 'success');
-    var btn = document.getElementById('copy-btn');
-    btn.textContent = 'Copied';
-    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
-  });
-}
+/* ── IMAGE GENERATION ── */
+function generateImage() {
+  if (isGenerating) { showToast('Still generating...', 'error'); return; }
+  const inp = document.getElementById('main-input');
+  const text = inp ? inp.value.trim() : '';
+  if (!text) { showToast('Enter a prompt first!', 'error'); if (inp) inp.focus(); return; }
 
-/* ═══════════════════════════════════════
-   IMAGE GENERATION via Pollinations AI
-═══════════════════════════════════════ */
-function generateImage(promptOverride) {
-  var prompt = promptOverride || buildPrompt();
+  isGenerating = true;
+  const prompt = text + ', masterpiece, highly detailed, sharp focus, professional lighting, 8k';
+  const [w, h] = selectedSize.split('x').map(Number);
+  const seed = Math.floor(Math.random() * 999999);
+  const enhance = selectedQuality === 'ultra' ? 'true' : 'false';
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${w}&height=${h}&seed=${seed}&nologo=true&enhance=${enhance}&t=${Date.now()}`;
+  generatedImageUrl = url;
 
-  if (!prompt || prompt.includes('[your subject]')) {
-    showToast('What should I create? Enter a prompt first!', 'error');
-    document.getElementById('subject-input').focus();
-    return;
+  const loaderEl = document.getElementById('output-loader');
+  const phEl     = document.getElementById('output-placeholder');
+  const imgEl    = document.getElementById('output-img');
+  const refEl    = document.getElementById('refine-panel');
+  const bar      = document.getElementById('progress-bar');
+
+  if (loaderEl) loaderEl.style.display = 'block';
+  if (phEl)     phEl.style.display = 'none';
+  if (imgEl)    imgEl.style.display = 'none';
+  if (refEl)    refEl.style.display = 'none';
+
+  if (bar) {
+    bar.style.transition = 'none'; bar.style.width = '0%';
+    void bar.offsetWidth;
+    bar.style.transition = 'width 20s linear'; bar.style.width = '85%';
   }
 
-  // UI Updates for Loading
-  document.getElementById('output-placeholder').style.display = 'none';
-  document.getElementById('generated-image').style.display = 'none';
-  document.getElementById('output-actions').style.display = 'none';
-  document.getElementById('image-loader').style.display = 'flex';
-  document.getElementById('creation-status').textContent = 'AI is crafting...';
-
-  // Smooth Scroll to Result
-  scrollToSection('output-section');
-
-  var fill = document.getElementById('progress-fill');
-  fill.style.width = '0%';
-  fill.style.animation = 'none';
-  void fill.offsetWidth;
-  fill.style.animation = 'progress-anim 10s ease forwards';
-
-  var encoded = encodeURIComponent(prompt);
-  var seed = Math.floor(Math.random() * 999999);
-  var imageUrl = 'https://image.pollinations.ai/prompt/' + encoded + '?width=1024&height=768&seed=' + seed + '&nologo=true&enhance=true';
-
-  generatedImageUrl = imageUrl;
-
-  var img = new Image();
+  const img = new Image();
   img.crossOrigin = 'anonymous';
-
-  img.onload = function() {
-    document.getElementById('image-loader').style.display = 'none';
-    var displayImg = document.getElementById('generated-image');
-    displayImg.src = imageUrl;
-    displayImg.style.display = 'block';
-    document.getElementById('output-actions').style.display = 'flex';
-    document.getElementById('creation-status').textContent = 'Masterpiece Ready ✦';
-    
-    showToast('Image generated successfully!', 'success');
+  img.onload = () => {
+    isGenerating = false;
+    if (loaderEl) loaderEl.style.display = 'none';
+    if (imgEl)  { imgEl.src = url; imgEl.style.display = 'block'; }
+    if (refEl)    refEl.style.display = 'block';
+    if (bar)    { bar.style.transition = 'width 0.3s'; bar.style.width = '100%'; }
+    showToast('✦ Image ready!', 'success');
+    saveToHistory(url, text);
   };
-
-  img.onerror = function() {
-    document.getElementById('image-loader').style.display = 'none';
-    document.getElementById('creation-status').textContent = 'Generation Failed';
+  img.onerror = () => {
+    isGenerating = false;
+    if (loaderEl) loaderEl.style.display = 'none';
+    if (phEl)     phEl.style.display = 'block';
     showToast('Generation failed. Try again.', 'error');
   };
-
-  img.src = imageUrl;
+  img.src = url;
 }
 
-/* ─── DOWNLOAD ─── */
 function downloadImage() {
   if (!generatedImageUrl) { showToast('No image to download!', 'error'); return; }
-  var a = document.createElement('a');
-  a.href = generatedImageUrl;
-  a.download = 'pixelmind-ai-' + Date.now() + '.jpg';
-  a.target = '_blank';
-  a.click();
+  const a = document.createElement('a');
+  a.href = generatedImageUrl; a.download = 'pixelmind-' + Date.now() + '.jpg'; a.target = '_blank'; a.click();
   showToast('Download started!', 'success');
 }
 
-/* ─── SHARE ─── */
 function shareImage() {
-  if (!generatedImageUrl) { showToast('Generate an image first!', 'error'); return; }
-  navigator.clipboard.writeText(generatedImageUrl).then(function() {
-    showToast('Image URL copied to clipboard!', 'success');
-  });
+  if (!generatedImageUrl) { showToast('No image yet!', 'error'); return; }
+  navigator.clipboard.writeText(generatedImageUrl).then(() => showToast('URL copied!', 'success'));
 }
 
-/* ═══════════════════════════════════════
-   TEMPLATE PROMPTS
-═══════════════════════════════════════ */
-var TEMPLATES = {
-  universal: function(s) {
-    return 'Create a high-quality image of ' + s + ' in a stunning environment, ' +
-      'style: realistic, lighting: dramatic, mood: aesthetic, ' +
-      'ultra-detailed, 4K resolution, sharp focus, professional quality ' +
-      '--no blur, distortion, low quality';
-  },
-  realistic: function(s) {
-    return 'Create a hyper-realistic image of ' + s + ', natural lighting, ' +
-      'photography style, DSLR quality, depth of field, ultra-detailed skin texture, ' +
-      '8K resolution, bokeh background, professional photograph';
-  },
-  anime: function(s) {
-    return 'Create an anime-style illustration of ' + s + ', vibrant colors, ' +
-      'detailed background, soft lighting, studio-quality, ' +
-      'trending anime art style, 4K, Makoto Shinkai inspired';
-  },
-  logo: function(s) {
-    return 'Design a modern minimalist logo for ' + s + ', clean typography, ' +
-      'vector design, professional branding, white background, ' +
-      'high resolution, scalable design, flat icon style';
-  },
-  cyberpunk: function(s) {
-    return 'Create a futuristic cyberpunk scene with ' + s + ', neon lights, ' +
-      'dark dystopian city, glowing holographic elements, ' +
-      'cinematic lighting, ultra-detailed, 4K, blade runner aesthetic';
-  },
-  fantasy: function(s) {
-    return 'Create a fantasy scene of ' + s + ', magical enchanted environment, ' +
-      'glowing mystical effects, epic cinematic lighting, ' +
-      'highly detailed, concept art style, ultra HD, digital painting';
+/* ── AI VIDEO GENERATOR (Real 12s Canvas Video) ── */
+async function generateAnimation() {
+  const inp = document.getElementById('video-prompt');
+  const text = inp ? inp.value.trim() : '';
+  if (!text) { showToast('Enter a prompt!', 'error'); if (inp) inp.focus(); return; }
+
+  const btn = document.getElementById('anim-btn');
+  btn.disabled = true; btn.textContent = 'Generating...';
+  videoBlob = null;
+
+  const loaderEl = document.getElementById('anim-loader');
+  const phEl     = document.getElementById('anim-placeholder');
+  const playerEl = document.getElementById('anim-player');
+  const msgEl    = document.getElementById('anim-loader-msg');
+  const bar      = document.getElementById('anim-progress');
+
+  if (loaderEl) loaderEl.style.display = 'block';
+  if (phEl)     phEl.style.display = 'none';
+  if (playerEl) playerEl.style.display = 'none';
+
+  const total = selectedFrames;
+  // Resolution logic: 720 -> 1280x720, 1080 -> 1920x1080, 1440 -> 2560x1440
+  const W = Math.round(selectedRes * (16 / 9));
+  const H = selectedRes;
+
+  if (voiceEnabled) speak(`Generating your ${total} frame animation in ${H}p resolution. This will take about a minute.`);
+
+  const styleShifts = [
+    'dawn light, mist rising', 'golden hour glow, warm tones',
+    'dramatic clouds, cinematic', 'ethereal atmosphere, glowing',
+    'epic wide angle, sweeping', 'ultra detailed, breathtaking',
+    'deep shadows, high contrast', 'soft morning light, serene',
+    'vibrant colors, vivid', 'moody blue hour, atmospheric'
+  ];
+
+  const frameImages = [];
+
+  // Load frames SEQUENTIALLY to avoid API rate limiting
+  for (let i = 0; i < total; i++) {
+    if (msgEl) msgEl.textContent = `Loading frame ${i + 1} of ${total}...`;
+    if (bar) bar.style.width = Math.round(((i) / total) * 50) + '%';
+
+    const prompt = `${text}, ${styleShifts[i % styleShifts.length]}, masterpiece, cinematic, ultra-detailed, 8k`;
+    const seed = Math.floor(Math.random() * 999999) + i * 1337;
+    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${W}&height=${H}&seed=${seed}&nologo=true&t=${Date.now() + i}`;
+
+    await new Promise(resolve => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => { frameImages.push(img); resolve(); };
+      img.onerror = () => {
+        const img2 = new Image();
+        img2.crossOrigin = 'anonymous';
+        img2.onload = () => { frameImages.push(img2); resolve(); };
+        img2.onerror = () => { resolve(); };
+        img2.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(text + ', cinematic, masterpiece')}?width=${W}&height=${H}&seed=${seed + 9999}&nologo=true`;
+      };
+      img.src = url;
+    });
   }
-};
 
-function useTemplate(type) {
-  var subjectEl = document.getElementById('template-subject');
-  var subject = subjectEl.value.trim();
-
-  if (!subject) {
-    subjectEl.focus();
-    subjectEl.style.borderColor = '#f97316';
-    setTimeout(function() { subjectEl.style.borderColor = ''; }, 1500);
-    showToast('Enter your subject first!', 'error');
+  const valid = frameImages.filter(Boolean);
+  if (valid.length === 0) {
+    if (loaderEl) loaderEl.style.display = 'none';
+    if (phEl) phEl.style.display = 'block';
+    showToast('Failed to load frames. Check connection.', 'error');
+    btn.disabled = false; btn.textContent = 'Animate ▶';
     return;
   }
 
-  var prompt = TEMPLATES[type](subject);
-  templatePrompt = prompt;
+  if (msgEl) msgEl.textContent = `Recording 12-second video (${valid.length} frames)...`;
 
-  var resultBox = document.getElementById('template-result-box');
-  document.getElementById('template-result-text').textContent = prompt;
-  resultBox.style.display = 'block';
-  resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-  document.querySelectorAll('.template-card').forEach(function(c) { c.classList.remove('active-tc'); });
-  var activeCard = document.querySelector('[data-type="' + type + '"]');
-  if (activeCard) activeCard.classList.add('active-tc');
-
-  var typeName = type.charAt(0).toUpperCase() + type.slice(1);
-  showToast(typeName + ' template applied!', 'success');
-}
-
-function copyTemplatePrompt() {
-  if (!templatePrompt) return;
-  navigator.clipboard.writeText(templatePrompt).then(function() {
-    showToast('Template prompt copied!', 'success');
-  });
-}
-
-function generateFromTemplate() {
-  if (!templatePrompt) { showToast('Select a template first!', 'error'); return; }
-  var sub = document.getElementById('template-subject').value.trim();
-  document.getElementById('subject-input').value = sub;
-  scrollToSection('generator');
-  setTimeout(function() { generateImage(templatePrompt); }, 600);
-}
-
-/* ═══════════════════════════════════════
-   EDITOR PROMPTS
-═══════════════════════════════════════ */
-function buildEditorPrompt(type) {
-  var prompt = '';
-  var resultId = 'result-' + type;
-
-  if (type === 'background') {
-    var subject = document.getElementById('bg-subject').value.trim() || 'the subject';
-    var newBg = document.getElementById('bg-new').value.trim() || 'a beautiful natural environment';
-    prompt = 'Take ' + subject + ' and replace the background with ' + newBg + '. ' +
-      'Match the original lighting and shadows naturally, make it photorealistic and seamless, ' +
-      'maintain original subject quality, professional composite photography';
-  } else if (type === 'removal') {
-    var obj = document.getElementById('obj-remove').value.trim() || 'unwanted objects';
-    var preserve = document.getElementById('obj-preserve').value.trim() || 'the background';
-    prompt = 'Remove ' + obj + ' from the image. Fill the removed area naturally with ' + preserve + '. ' +
-      'Maintain original image quality, background consistency, photorealistic inpainting, ' +
-      'seamless blending, ultra-detailed restoration';
-  } else if (type === 'enhance') {
-    var desc = document.getElementById('enh-desc').value.trim() || 'the image';
-    var level = document.getElementById('enh-level').value;
-    prompt = 'Enhance ' + desc + ': increase sharpness and clarity, improve colors and lighting, ' +
-      'convert to ' + level + ', reduce noise, restore fine details, professional photo enhancement, ' +
-      'ultra-detailed, crisp and vivid output';
-  } else if (type === 'style') {
-    var stSubject = document.getElementById('st-subject').value.trim() || 'the subject';
-    var style = document.getElementById('st-style').value;
-    prompt = 'Convert ' + stSubject + ' into ' + style + ' style. Keep all subject details intact, ' +
-      'enhance visual appeal with the new style, professional artistic conversion, ' +
-      'ultra-detailed, vibrant colors, high resolution output';
+  // ── AI AUDIO INJECTION ──
+  let audioTrack = null;
+  if (voiceEnabled) {
+    try {
+      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text.substring(0, 200))}&tl=en&client=tw-ob`;
+      const audio = new Audio(ttsUrl);
+      audio.crossOrigin = "anonymous";
+      
+      // We need to wait for audio to be ready to capture its stream
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioCtx.createMediaElementSource(audio);
+      const dest = audioCtx.createMediaStreamDestination();
+      source.connect(dest);
+      source.connect(audioCtx.destination);
+      audioTrack = dest.stream.getAudioTracks()[0];
+      
+      // Start playing when recording starts
+      audio.play();
+    } catch (e) {
+      console.warn("Audio capture failed, recording silent video", e);
+    }
   }
 
-  var resultEl = document.getElementById(resultId);
-  resultEl.innerHTML = '<span class="ec-prompt-label">YOUR AI EDITING PROMPT</span>' + prompt;
-  resultEl.classList.add('visible');
+  // Setup canvas
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
 
-  var copyBtn = document.createElement('button');
-  copyBtn.textContent = 'Copy Prompt';
-  copyBtn.style.cssText = 'margin-top:12px;width:100%;padding:10px;background:rgba(168,85,247,0.2);border:1px solid rgba(168,85,247,0.3);color:#a855f7;border-radius:8px;cursor:pointer;font-family:Outfit,sans-serif;font-weight:600;font-size:0.85rem;transition:all 0.2s;';
-  var capturedPrompt = prompt;
-  copyBtn.onclick = function() {
-    navigator.clipboard.writeText(capturedPrompt);
-    showToast('Editing prompt copied!', 'success');
+  // Detect supported mime type
+  const mimes = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+  const mime = mimes.find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm';
+
+  const videoStream = canvas.captureStream(30);
+  
+  // MERGE STREAMS: Video + Audio (if enabled)
+  const combinedStream = new MediaStream([
+    videoStream.getVideoTracks()[0],
+    ...(audioTrack ? [audioTrack] : [])
+  ]);
+
+  const recorder = new MediaRecorder(combinedStream, { mimeType: mime, videoBitsPerSecond: 3000000 });
+  const chunks = [];
+  recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+
+  const TARGET_DURATION = 12000; // 12 seconds minimum
+  const timePerFrame = Math.floor(TARGET_DURATION / valid.length);
+  const transMs = Math.floor(timePerFrame * 0.7);
+  const totalVideoMs = valid.length * timePerFrame;
+
+  recorder.onstop = () => {
+    videoBlob = new Blob(chunks, { type: mime });
+    const vidUrl = URL.createObjectURL(videoBlob);
+    if (loaderEl) loaderEl.style.display = 'none';
+    if (playerEl) playerEl.style.display = 'flex';
+    if (bar) { bar.style.transition = 'width 0.3s'; bar.style.width = '100%'; }
+    const vidEl = document.getElementById('anim-video');
+    if (vidEl) { vidEl.src = vidUrl; vidEl.play(); }
+    showToast(`✦ ${Math.round(totalVideoMs/1000)}s AI video ready!`, 'success');
+    if (voiceEnabled) speak("Your AI video is ready for viewing and download.");
+    btn.disabled = false; btn.textContent = 'Animate ▶';
   };
 
-  var oldBtn = resultEl.querySelector('button');
-  if (oldBtn) oldBtn.remove();
-  resultEl.appendChild(copyBtn);
+  recorder.start(200);
 
-  showToast('Editing prompt built!', 'success');
-  resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
+  let startTime = null;
+  function renderFrame(ts) {
+    if (!startTime) startTime = ts;
+    const elapsed = ts - startTime;
+    const progress = Math.min(elapsed / totalVideoMs, 1);
+    if (bar) bar.style.width = Math.round(50 + progress * 50) + '%';
 
-/* ═══════════════════════════════════════
-   SLIDES / PRESENTATION
-═══════════════════════════════════════ */
-function initSlides() {
-  var dotsContainer = document.getElementById('slide-dots');
-  dotsContainer.innerHTML = '';
-  for (var i = 0; i < TOTAL_SLIDES; i++) {
-    var dot = document.createElement('div');
-    dot.className = 'dot' + (i === 0 ? ' active' : '');
-    dot.id = 'dot-' + i;
-    (function(idx) {
-      dot.onclick = function() { goToSlide(idx); };
-    })(i);
-    dotsContainer.appendChild(dot);
-  }
-  updateSlideUI();
-}
+    const cyclePos = elapsed % timePerFrame;
+    const curIdx   = Math.min(Math.floor(elapsed / timePerFrame), valid.length - 1);
+    const nextIdx  = (curIdx + 1) % valid.length;
+    const alpha    = Math.min(cyclePos / transMs, 1);
 
-function changeSlide(direction) {
-  var newSlide = currentSlide + direction;
-  if (newSlide < 0 || newSlide >= TOTAL_SLIDES) return;
-  goToSlide(newSlide);
-}
-
-function goToSlide(index) {
-  var slides = document.querySelectorAll('.slide');
-  slides[currentSlide].classList.remove('active');
-  var prevDot = document.getElementById('dot-' + currentSlide);
-  if (prevDot) prevDot.classList.remove('active');
-
-  currentSlide = index;
-  slides[currentSlide].classList.add('active');
-  var nextDot = document.getElementById('dot-' + currentSlide);
-  if (nextDot) nextDot.classList.add('active');
-
-  updateSlideUI();
-}
-
-function updateSlideUI() {
-  document.getElementById('prev-btn').disabled = currentSlide === 0;
-  document.getElementById('next-btn').disabled = currentSlide === TOTAL_SLIDES - 1;
-  document.getElementById('next-btn').textContent = currentSlide === TOTAL_SLIDES - 1 ? 'Finish' : 'Next';
-}
-
-document.addEventListener('keydown', function(e) {
-  var prt = document.getElementById('presentation');
-  var rect = prt.getBoundingClientRect();
-  if (rect.top < window.innerHeight && rect.bottom > 0) {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') changeSlide(-1);
-  }
-});
-
-/* ═══════════════════════════════════════
-   TOAST
-═══════════════════════════════════════ */
-var toastTimer;
-function showToast(message, type) {
-  type = type || '';
-  var toast = document.getElementById('toast');
-  clearTimeout(toastTimer);
-  toast.textContent = message;
-  toast.className = 'toast ' + type + ' show';
-  toastTimer = setTimeout(function() { toast.className = 'toast'; }, 3200);
-}
-
-/* ─── EXTRA STYLES ─── */
-var extraStyles = document.createElement('style');
-extraStyles.textContent = [
-  '.template-card.active-tc { border-color: rgba(168,85,247,0.6) !important; box-shadow: 0 0 30px rgba(168,85,247,0.2); }',
-  '.step-num { display: flex !important; }'
-].join('\n');
-document.head.appendChild(extraStyles);
-
-/* ═══════════════════════════════════════
-   SCROLL ANIMATION
-═══════════════════════════════════════ */
-var observerOpts = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
-var scrollObserver = new IntersectionObserver(function(entries) {
-  entries.forEach(function(entry) {
-    if (entry.isIntersecting) {
-      entry.target.style.opacity = '1';
-      entry.target.style.transform = 'translateY(0)';
-      scrollObserver.unobserve(entry.target);
+    ctx.drawImage(valid[curIdx], 0, 0, W, H);
+    if (alpha > 0 && curIdx !== nextIdx) {
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(valid[nextIdx], 0, 0, W, H);
+      ctx.globalAlpha = 1;
     }
-  });
-}, observerOpts);
 
-document.querySelectorAll('.glass-card, .template-card, .editor-card, .slide-content').forEach(function(el) {
-  el.style.opacity = '0';
-  el.style.transform = 'translateY(24px)';
-  el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-  scrollObserver.observe(el);
-});
-
-console.log('%c PixelMind AI Loaded ', 'color:#a855f7;font-size:1.2rem;font-weight:bold;background:#06060f;padding:8px;border-radius:6px;');
-
-/* ═══════════════════════════════════════
-   AUTH MANAGER
-═══════════════════════════════════════ */
-var AuthManager = {
-  SESSION_KEY: 'pm_session',
-  USERS_KEY: 'pm_users',
-
-  getUsers: function() {
-    try { return JSON.parse(localStorage.getItem(this.USERS_KEY) || '{}'); } catch(e) { return {}; }
-  },
-  saveUsers: function(users) {
-    localStorage.setItem(this.USERS_KEY, JSON.stringify(users));
-  },
-  getSession: function() {
-    try { return JSON.parse(localStorage.getItem(this.SESSION_KEY) || 'null'); } catch(e) { return null; }
-  },
-  saveSession: function(user) {
-    localStorage.setItem(this.SESSION_KEY, JSON.stringify(user));
-  },
-  clearSession: function() {
-    localStorage.removeItem(this.SESSION_KEY);
-  },
-  register: function(name, username, password) {
-    if (!name || !username || !password) return { ok: false, msg: 'All fields are required.' };
-    var users = this.getUsers();
-    if (users[username]) return { ok: false, msg: 'Username already taken.' };
-    users[username] = { name: name, username: username, password: password };
-    this.saveUsers(users);
-    this.saveSession({ name: name, username: username });
-    return { ok: true };
-  },
-  login: function(username, password) {
-    if (!username || !password) return { ok: false, msg: 'Enter username and password.' };
-    var users = this.getUsers();
-    var user = users[username];
-    if (!user) return { ok: false, msg: 'User not found.' };
-    if (user.password !== password) return { ok: false, msg: 'Incorrect password.' };
-    this.saveSession({ name: user.name, username: username });
-    return { ok: true, user: user };
+    if (elapsed < totalVideoMs) {
+      requestAnimationFrame(renderFrame);
+    } else {
+      ctx.drawImage(valid[valid.length - 1], 0, 0, W, H);
+      setTimeout(() => recorder.stop(), 600);
+    }
   }
-};
+  requestAnimationFrame(renderFrame);
+}
 
-function openAuthModal() {
-  document.getElementById('auth-modal').style.display = 'flex';
+function downloadVideoFile() {
+  if (!videoBlob) { showToast('No video to download!', 'error'); return; }
+  const ext = videoBlob.type.includes('mp4') ? 'mp4' : 'webm';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(videoBlob);
+  a.download = 'pixelmind-ai-video-' + Date.now() + '.' + ext;
+  a.click();
+  showToast('Video downloading!', 'success');
 }
-function closeAuthModal() {
-  document.getElementById('auth-modal').style.display = 'none';
+
+function togglePlay() {
+  const vid = document.getElementById('anim-video');
+  if (!vid) return;
+  const btn = document.getElementById('play-btn');
+  if (vid.paused) { vid.play(); if (btn) btn.textContent = '⏸ Pause'; }
+  else { vid.pause(); if (btn) btn.textContent = '▶ Play'; }
 }
-function switchTab(tab) {
-  document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
-  document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
-  document.getElementById('tab-login').className = 'auth-tab' + (tab === 'login' ? ' active' : '');
-  document.getElementById('tab-register').className = 'auth-tab' + (tab === 'register' ? ' active' : '');
+
+/* ── UPLOAD & EDIT ── */
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) loadMediaFile(file);
 }
-function doLogin() {
-  var username = document.getElementById('login-username').value.trim();
-  var password = document.getElementById('login-password').value;
-  var result = AuthManager.login(username, password);
-  if (!result.ok) { showToast(result.msg, 'error'); return; }
-  closeAuthModal();
-  updateNavAuth();
-  showToast('Welcome back, ' + username + '! 👋', 'success');
+function handleFileSelect(input) {
+  if (input.files[0]) loadMediaFile(input.files[0]);
 }
-function doRegister() {
-  var name = document.getElementById('reg-name').value.trim();
-  var username = document.getElementById('reg-username').value.trim();
-  var password = document.getElementById('reg-password').value;
-  var result = AuthManager.register(name, username, password);
-  if (!result.ok) { showToast(result.msg, 'error'); return; }
-  closeAuthModal();
-  updateNavAuth();
-  showToast('Account created! Welcome, ' + name + ' 🚀', 'success');
-}
-function doLogout() {
-  AuthManager.clearSession();
-  updateNavAuth();
-  showToast('Logged out successfully.', 'success');
-}
-function updateNavAuth() {
-  var session = AuthManager.getSession();
-  var userInfo = document.getElementById('nav-user-info');
-  var loginBtn = document.getElementById('nav-login-btn');
-  if (session) {
-    document.getElementById('nav-username').textContent = '👤 ' + session.username;
-    userInfo.style.display = 'flex';
-    loginBtn.style.display = 'none';
+
+function loadMediaFile(file) {
+  const type = file.type.startsWith('video') ? 'video' : 'image';
+  currentMediaType = type;
+  const url = URL.createObjectURL(file);
+  document.getElementById('editor-panel').style.display = 'block';
+  document.getElementById('upload-zone').style.display = 'none';
+  const badge = document.getElementById('media-type-badge');
+  if (badge) badge.textContent = type === 'video' ? '🎬 Video' : '🖼 Image';
+  const canvas = document.getElementById('edit-canvas');
+  const video  = document.getElementById('edit-video');
+  if (type === 'image') {
+    if (video) video.style.display = 'none';
+    if (canvas) canvas.style.display = 'block';
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      canvas._srcImg = img;
+      applyFilters();
+    };
+    img.src = url;
   } else {
-    userInfo.style.display = 'none';
-    loginBtn.style.display = 'inline-flex';
+    if (canvas) canvas.style.display = 'none';
+    if (video) { video.style.display = 'block'; video.src = url; }
+    applyFilters();
+  }
+  showToast('Media loaded!', 'success');
+}
+
+function applyFilters() {
+  const b  = (document.getElementById('f-brightness') || {value:100}).value;
+  const c  = (document.getElementById('f-contrast')   || {value:100}).value;
+  const s  = (document.getElementById('f-saturation') || {value:100}).value;
+  const h  = (document.getElementById('f-hue')        || {value:0}).value;
+  const bl = (document.getElementById('f-blur')       || {value:0}).value;
+  const sp = (document.getElementById('f-sepia')      || {value:0}).value;
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setText('v-brightness', b); setText('v-contrast', c); setText('v-saturation', s);
+  setText('v-hue', h); setText('v-blur', bl); setText('v-sepia', sp);
+  const f = `brightness(${b}%) contrast(${c}%) saturate(${s}%) hue-rotate(${h}deg) blur(${bl}px) sepia(${sp}%)`;
+  const canvas = document.getElementById('edit-canvas');
+  const video  = document.getElementById('edit-video');
+  if (canvas && canvas.style.display !== 'none') canvas.style.filter = f;
+  if (video  && video.style.display  !== 'none') video.style.filter  = f;
+}
+
+function applyPreset(name) {
+  const P = {
+    cinematic: [90,120,80,0,0,0],  vintage: [90,90,70,15,1,35],
+    cyberpunk: [110,130,140,200,0,0], bw: [100,110,0,0,0,0],
+    warm: [105,105,110,20,0,10],   cool: [100,105,100,200,0,0],
+    reset: [100,100,100,0,0,0]
+  };
+  const p = P[name]; if (!p) return;
+  const ids = ['f-brightness','f-contrast','f-saturation','f-hue','f-blur','f-sepia'];
+  ids.forEach((id, i) => { const el = document.getElementById(id); if (el) el.value = p[i]; });
+  applyFilters();
+}
+
+function downloadEdited() {
+  const canvas = document.getElementById('edit-canvas');
+  if (currentMediaType === 'image' && canvas && canvas.style.display !== 'none' && canvas._srcImg) {
+    const off = document.createElement('canvas');
+    off.width = canvas.width; off.height = canvas.height;
+    const ctx = off.getContext('2d');
+    const b = document.getElementById('f-brightness').value;
+    const c = document.getElementById('f-contrast').value;
+    const s = document.getElementById('f-saturation').value;
+    const h = document.getElementById('f-hue').value;
+    const bl = document.getElementById('f-blur').value;
+    const sp = document.getElementById('f-sepia').value;
+    ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%) hue-rotate(${h}deg) blur(${bl}px) sepia(${sp}%)`;
+    ctx.drawImage(canvas._srcImg, 0, 0);
+    off.toBlob(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'pixelmind-edited-' + Date.now() + '.png';
+      a.click();
+    });
   }
 }
-// Close modal on overlay click
-document.getElementById('auth-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeAuthModal();
-});
-// Init auth state on load
-updateNavAuth();
 
-/* ═══════════════════════════════════════
-   HISTORY MANAGER
-═══════════════════════════════════════ */
-var HistoryManager = {
+/* HISTORY */
+const HistoryManager = {
   KEY: 'pm_history',
-  getAll: function() {
-    try { return JSON.parse(localStorage.getItem(this.KEY) || '[]'); } catch(e) { return []; }
-  },
-  save: function(entry) {
-    var list = this.getAll();
-    list.unshift(entry); // newest first
-    if (list.length > 50) list = list.slice(0, 50); // cap at 50
-    localStorage.setItem(this.KEY, JSON.stringify(list));
-  },
-  deleteItem: function(id) {
-    var list = this.getAll().filter(function(e) { return e.id !== id; });
-    localStorage.setItem(this.KEY, JSON.stringify(list));
-  },
-  clear: function() { localStorage.removeItem(this.KEY); }
+  getAll()   { try { return JSON.parse(localStorage.getItem(this.KEY) || '[]'); } catch { return []; } },
+  save(e)    { let l = this.getAll(); l.unshift(e); if (l.length > 50) l = l.slice(0, 50); localStorage.setItem(this.KEY, JSON.stringify(l)); },
+  remove(id) { localStorage.setItem(this.KEY, JSON.stringify(this.getAll().filter(e => e.id !== id))); },
+  clear()    { localStorage.removeItem(this.KEY); }
 };
+
+function saveToHistory(url, prompt) {
+  HistoryManager.save({ id: 'h_' + Date.now(), url, prompt, date: new Date().toLocaleString() });
+  renderHistory();
+}
 
 function renderHistory() {
-  var list = HistoryManager.getAll();
-  var grid = document.getElementById('history-grid');
-  var empty = document.getElementById('history-empty');
-  var countEl = document.getElementById('history-count');
-  countEl.textContent = list.length + ' image' + (list.length !== 1 ? 's' : '') + ' saved';
-  // Remove old cards (keep empty placeholder)
-  Array.from(grid.querySelectorAll('.history-card')).forEach(function(c) { c.remove(); });
-  if (list.length === 0) {
-    empty.style.display = 'block';
-    return;
-  }
-  empty.style.display = 'none';
-  list.forEach(function(entry) {
-    var card = document.createElement('div');
+  const list  = HistoryManager.getAll();
+  const grid  = document.getElementById('history-grid');
+  const count = document.getElementById('history-count');
+  if (!grid) return;
+  if (count) count.textContent = list.length + ' image' + (list.length !== 1 ? 's' : '');
+  grid.innerHTML = list.length === 0 ? '<div class="history-empty">No images yet.</div>' : '';
+  list.forEach(entry => {
+    const card = document.createElement('div');
     card.className = 'history-card';
-    card.innerHTML =
-      '<img class="history-thumb" src="' + entry.url + '" alt="Generated image" loading="lazy" />' +
-      '<div class="history-info">' +
-        '<div class="history-prompt">' + entry.prompt + '</div>' +
-        '<div class="history-meta">' + entry.date + '</div>' +
-        '<div class="history-actions">' +
-          '<button class="history-btn" onclick="reuseHistory(\'' + entry.id + '\')">♻️ Reuse</button>' +
-          '<button class="history-btn" onclick="downloadHistoryItem(\'' + entry.url + '\')">⬇️ Save</button>' +
-          '<button class="history-btn del" onclick="deleteHistoryItem(\'' + entry.id + '\')">🗑️</button>' +
-        '</div>' +
-      '</div>';
+    card.innerHTML = `
+      <img src="${entry.url}" alt="AI image" loading="lazy" onclick="reuseFromHistory('${entry.id}')" />
+      <div class="history-info">
+        <p class="history-prompt">${entry.prompt.substring(0, 60)}...</p>
+        <div class="history-actions">
+          <button onclick="reuseFromHistory('${entry.id}')">♻️ Reuse</button>
+          <button onclick="HistoryManager.remove('${entry.id}');renderHistory()">🗑️</button>
+        </div>
+      </div>`;
     grid.appendChild(card);
   });
 }
 
-function saveToHistory(url, prompt) {
-  var entry = {
-    id: 'h_' + Date.now(),
-    url: url,
-    prompt: prompt,
-    date: new Date().toLocaleString()
-  };
-  HistoryManager.save(entry);
-  renderHistory();
-}
-
-function reuseHistory(id) {
-  var entry = HistoryManager.getAll().find(function(e) { return e.id === id; });
+function reuseFromHistory(id) {
+  const entry = HistoryManager.getAll().find(e => e.id === id);
   if (!entry) return;
-  document.getElementById('subject-input').value = entry.prompt.substring(0, 80);
-  scrollToSection('generator');
-  showToast('Prompt loaded from history!', 'success');
+  const inp = document.getElementById('main-input');
+  if (inp) inp.value = entry.prompt;
+  switchMode('image');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function downloadHistoryItem(url) {
-  var a = document.createElement('a');
-  a.href = url; a.download = 'pixelmind-' + Date.now() + '.jpg';
-  a.target = '_blank'; a.click();
+function clearHistory() { if (confirm('Clear all?')) { HistoryManager.clear(); renderHistory(); } }
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast'); if (!t) return;
+  t.textContent = msg; t.className = 'toast ' + type + ' show';
+  setTimeout(() => { t.className = 'toast'; }, 3000);
 }
 
-function deleteHistoryItem(id) {
-  HistoryManager.deleteItem(id);
-  renderHistory();
-  showToast('Removed from history.', 'success');
-}
-
-function clearHistory() {
-  if (!confirm('Clear all history? This cannot be undone.')) return;
-  HistoryManager.clear();
-  renderHistory();
-  showToast('History cleared.', 'success');
-}
-
-// Patch generateImage to save to history after load
-var _origGenImg = generateImage;
-generateImage = function(promptOverride) {
-  // Hide filter/variations panels on new generate
-  document.getElementById('filter-panel').style.display = 'none';
-  document.getElementById('variations-panel').style.display = 'none';
-  resetFilters();
-  _origGenImg(promptOverride);
-};
-
-// Hook into img.onload to save to history
-var _origImgLoad = null;
-var _patchApplied = false;
-function patchGenerateImage() {
-  if (_patchApplied) return;
-  _patchApplied = true;
-  var origGen = window._origGenImg || window.generateImage;
-  // Watch for generated-image src changes via MutationObserver
-  var imgEl = document.getElementById('generated-image');
-  var observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(m) {
-      if (m.attributeName === 'src' && imgEl.src && imgEl.style.display !== 'none') {
-        // Wait a tick to ensure image is actually displayed
-        setTimeout(function() {
-          if (imgEl.style.display !== 'none' && imgEl.src && generatedImageUrl) {
-            document.getElementById('filter-panel').style.display = 'block';
-            saveToHistory(generatedImageUrl, currentPrompt || '(no prompt)');
-          }
-        }, 200);
-      }
-    });
-  });
-  observer.observe(imgEl, { attributes: true });
-}
-// Also patch the actual img onload via event delegation on the output area
-document.getElementById('image-output-area').addEventListener('load', function(e) {
-  if (e.target && e.target.id === 'generated-image') {
-    document.getElementById('filter-panel').style.display = 'block';
-    if (generatedImageUrl && currentPrompt) {
-      saveToHistory(generatedImageUrl, currentPrompt);
-    }
-  }
-}, true);
-
-// Render history on load
-renderHistory();
-patchGenerateImage();
-
-/* ═══════════════════════════════════════
-   IMAGE VARIATIONS
-═══════════════════════════════════════ */
-function generateVariations() {
-  if (!currentPrompt || currentPrompt.includes('[your subject]')) {
-    showToast('Build a prompt first!', 'error'); return;
-  }
-  var panel = document.getElementById('variations-panel');
-  var grid = document.getElementById('variations-grid');
-  panel.style.display = 'block';
-  grid.innerHTML = '';
-  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  showToast('Generating 3 variations...', 'success');
-
-  [1,2,3].forEach(function(n) {
-    var seed = Math.floor(Math.random() * 999999);
-    var encoded = encodeURIComponent(currentPrompt);
-    var url = 'https://image.pollinations.ai/prompt/' + encoded +
-      '?width=800&height=600&seed=' + seed + '&nologo=true&enhance=true';
-
-    var item = document.createElement('div');
-    item.className = 'variation-item';
-    item.innerHTML =
-      '<div class="var-loader"><div class="loader-spinner"></div></div>' +
-      '<div class="variation-label">Variation ' + n + '</div>';
-    grid.appendChild(item);
-
-    var img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = function() {
-      item.innerHTML =
-        '<img src="' + url + '" alt="Variation ' + n + '" />' +
-        '<div class="variation-label">Variation ' + n + ' ✦</div>';
-      item.onclick = function() {
-        document.getElementById('generated-image').src = url;
-        document.getElementById('generated-image').style.display = 'block';
-        document.getElementById('output-placeholder').style.display = 'none';
-        document.getElementById('output-actions').style.display = 'flex';
-        document.getElementById('filter-panel').style.display = 'block';
-        generatedImageUrl = url;
-        saveToHistory(url, currentPrompt);
-        showToast('Variation ' + n + ' selected!', 'success');
-        resetFilters();
-        scrollToSection('generator');
-      };
-    };
-    img.onerror = function() {
-      item.innerHTML = '<div style="padding:20px;text-align:center;color:#f87171;font-size:0.8rem;">Failed</div>';
-    };
-    img.src = url;
-  });
-}
-
-/* ═══════════════════════════════════════
-   FILTER MANAGER
-═══════════════════════════════════════ */
-function applyFilters() {
-  var img = document.getElementById('generated-image');
-  var b  = document.getElementById('f-brightness').value;
-  var c  = document.getElementById('f-contrast').value;
-  var s  = document.getElementById('f-saturation').value;
-  var bl = document.getElementById('f-blur').value;
-  document.getElementById('v-brightness').textContent = b;
-  document.getElementById('v-contrast').textContent = c;
-  document.getElementById('v-saturation').textContent = s;
-  document.getElementById('v-blur').textContent = bl;
-  img.style.filter =
-    'brightness(' + b + '%) contrast(' + c + '%) saturate(' + s + '%) blur(' + bl + 'px)';
-}
-
-function resetFilters() {
-  ['f-brightness','f-contrast','f-saturation'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) { el.value = 100; }
-  });
-  var blurEl = document.getElementById('f-blur');
-  if (blurEl) blurEl.value = 0;
-  ['v-brightness','v-contrast','v-saturation'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.textContent = '100';
-  });
-  var vb = document.getElementById('v-blur');
-  if (vb) vb.textContent = '0';
-  var img = document.getElementById('generated-image');
-  if (img) img.style.filter = 'none';
-}
-
-function downloadFiltered() {
-  var img = document.getElementById('generated-image');
-  if (!img || img.style.display === 'none') {
-    showToast('No image to download!', 'error'); return;
-  }
-  var b  = document.getElementById('f-brightness').value;
-  var c  = document.getElementById('f-contrast').value;
-  var s  = document.getElementById('f-saturation').value;
-  var bl = document.getElementById('f-blur').value;
-  var isDefault = b==='100' && c==='100' && s==='100' && bl==='0';
-
-  if (isDefault) {
-    // Direct download without canvas
-    var a = document.createElement('a');
-    a.href = generatedImageUrl;
-    a.download = 'pixelmind-ai-' + Date.now() + '.jpg';
-    a.target = '_blank'; a.click();
-    showToast('Download started!', 'success');
-    return;
-  }
-  // Canvas download with filters applied
-  var canvas = document.createElement('canvas');
-  canvas.width = img.naturalWidth || 1024;
-  canvas.height = img.naturalHeight || 768;
-  var ctx = canvas.getContext('2d');
-  ctx.filter = 'brightness(' + b + '%) contrast(' + c + '%) saturate(' + s + '%) blur(' + bl + 'px)';
-  try {
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob(function(blob) {
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url; a.download = 'pixelmind-filtered-' + Date.now() + '.png';
-      a.click();
-      setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
-      showToast('Filtered image downloaded!', 'success');
-    }, 'image/png');
-  } catch(e) {
-    // CORS fallback
-    var a = document.createElement('a');
-    a.href = generatedImageUrl;
-    a.download = 'pixelmind-ai-' + Date.now() + '.jpg';
-    a.target = '_blank'; a.click();
-    showToast('Download started (filters not embedded due to CORS).', 'success');
-  }
-}
-
-/* ═══════════════════════════════════════
-   IMAGE UPLOAD PREVIEW
-═══════════════════════════════════════ */
-function triggerUpload(inputId) {
-  document.getElementById(inputId).click();
-}
-
-function previewUpload(input, zoneId) {
-  var file = input.files && input.files[0];
-  if (!file) return;
-  var zone = document.getElementById(zoneId);
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    // Remove existing preview
-    var existing = zone.querySelector('.upload-preview');
-    if (existing) existing.remove();
-    var img = document.createElement('img');
-    img.className = 'upload-preview';
-    img.src = e.target.result;
-    img.alt = 'Uploaded preview';
-    zone.appendChild(img);
-    zone.querySelector('span').textContent = '✅ ' + file.name;
-    showToast('Image uploaded for reference!', 'success');
-  };
-  reader.readAsDataURL(file);
-}
-/* ═══════════════════════════════════════
-   HERO COMMAND BAR LOGIC
-═══════════════════════════════════════ */
-function generateFromHero() {
-  const heroInput = document.getElementById('hero-prompt-input');
-  let prompt = heroInput.value.trim();
-  
-  if (!prompt) {
-    showToast('What should I create? Enter a prompt first!', 'error');
-    heroInput.focus();
-    return;
-  }
-
-  // --- HERO AUTO-EXPANSION ---
-  // If the user types a simple word, we make it professional
-  if (prompt.split(' ').length < 4) {
-    prompt = 'A stunning ' + prompt + ' in a cinematic environment with epic detail';
-  }
-
-  // Update the generator section's input so the user sees it there too
-  document.getElementById('subject-input').value = prompt;
-  
-  // Build and generate
-  scrollToSection('generator');
-  setTimeout(() => {
-    generateImage(buildPrompt());
-  }, 600);
-}
-
-// Add Enter key listener for hero input
-document.getElementById('hero-prompt-input').addEventListener('keypress', function (e) {
+document.getElementById('media-upload')?.addEventListener('change', (e) => handleFileSelect(e.target));
+document.addEventListener('keydown', e => {
   if (e.key === 'Enter') {
-    generateFromHero();
+    if (document.getElementById('mode-image').style.display !== 'none') generateImage();
+    else if (document.getElementById('mode-video').style.display !== 'none') generateAnimation();
   }
 });

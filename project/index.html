@@ -3,256 +3,270 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PixelMind AI – Elite AI Image Generator</title>
-  <meta name="description" content="Generate, edit, and modify stunning AI images using advanced prompts. PixelMind AI makes creative design effortless for everyone." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>PixelMind AI – Image & Video Studio</title>
+  <meta name="description" content="Generate AI images, create animations, upload and edit images and videos with AI filters." />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- ─── PRELOADER ─── -->
+<!-- PRELOADER -->
 <div id="preloader">
   <div class="preloader-inner">
     <div class="preloader-ring"></div>
     <div class="preloader-ring r2"></div>
-    <div class="preloader-ring r3"></div>
-    <p class="preloader-text">Initializing AI Engine<span class="dots">...</span></p>
+    <p class="preloader-text">PixelMind AI<span class="dots">...</span></p>
   </div>
 </div>
 
-<!-- ─── AUTH MODAL ─── -->
-<div id="auth-modal" class="auth-overlay" style="display:none;">
-  <div class="auth-box glass-card">
-    <button class="auth-close" onclick="closeAuthModal()">✕</button>
-    <div class="auth-logo">✦ PixelMind <span class="accent">AI</span></div>
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</button>
-      <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Register</button>
-    </div>
-    <div id="form-login">
-      <div class="form-group"><label>Username</label><input type="text" id="login-username" placeholder="Enter username" /></div>
-      <div class="form-group"><label>Password</label><input type="password" id="login-password" placeholder="Enter password" /></div>
-      <button class="btn-generate" style="width:100%;margin-top:8px;" onclick="doLogin()">🔑 Login</button>
-    </div>
-    <div id="form-register" style="display:none;">
-      <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" placeholder="Your name" /></div>
-      <div class="form-group"><label>Username</label><input type="text" id="reg-username" placeholder="Choose a username" /></div>
-      <div class="form-group"><label>Password</label><input type="password" id="reg-password" placeholder="Create a password" /></div>
-      <button class="btn-generate" style="width:100%;margin-top:8px;" onclick="doRegister()">🚀 Create Account</button>
-    </div>
-  </div>
-</div>
-
+<!-- CANVAS -->
 <canvas id="particles-canvas"></canvas>
 
-<!-- ─── NAV ─── -->
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<!-- NAVBAR -->
 <nav id="navbar">
   <div class="nav-logo">
-    <div class="logo-icon">✦</div>
+    <span class="logo-icon">✦</span>
     <span>PixelMind <span class="accent">AI</span></span>
   </div>
-  <div class="nav-links">
-    <a href="#generator" class="nav-link">Generator</a>
-    <a href="#templates" class="nav-link">Templates</a>
-    <a href="#editor" class="nav-link">Editor</a>
-    <a href="#history" class="nav-link">History</a>
-    <a href="#presentation" class="nav-link">PRT</a>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab-img" onclick="switchMode('image')">🎨 Image</button>
+    <button class="nav-tab" id="tab-vid" onclick="switchMode('video')">🎬 Video Studio</button>
   </div>
-  <div class="nav-cta" id="nav-cta">
-    <span id="nav-user-info" style="display:none;" class="nav-user-info">
-      <span id="nav-username" class="nav-username"></span>
-      <button class="btn-logout" onclick="doLogout()">Logout</button>
-    </span>
-    <button class="btn-glow" id="nav-login-btn" onclick="openAuthModal()">🔑 Login</button>
+  <div class="nav-cta">
+    <button class="btn-glow" onclick="scrollToSection('history')">🕘 History</button>
   </div>
-  
-  <!-- Hamburger Menu Toggle -->
-  <button class="nav-toggle" id="nav-toggle" aria-label="Toggle Navigation">
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
-  
 </nav>
 
-<!-- ─── HERO ─── -->
-<section id="hero">
-  <div class="hero-bg-orb orb1"></div>
-  <div class="hero-bg-orb orb2"></div>
-  <div class="hero-bg-orb orb3"></div>
-  <div class="hero-content">
-    <div class="hero-badge">🤖 Powered by Deep Learning</div>
-    <h1 class="hero-title">
-      Create Stunning Images<br/>
-      <span class="gradient-text">With Just Words</span>
-    </h1>
-    <p class="hero-subtitle">
-      Generate, edit, and transform images using AI. Turn your imagination into 
-      professional-quality visuals in seconds — no design skills needed.
-    </p>
-    
-    <div class="hero-command-bar glass-card">
-      <div class="command-icon">✦</div>
-      <input type="text" id="hero-prompt-input" placeholder="What masterpiece should I create today? (e.g. a neon samurai in a rainy city)" />
-      <button class="btn-command" onclick="generateFromHero()">
-        <span>Generate</span>
-        <div class="cmd-shortcut">⏎</div>
-      </button>
+<!-- ══════════ IMAGE MODE ══════════ -->
+<main id="mode-image" class="mode-panel">
+  <div class="zen-wrap">
+    <div class="zen-header">
+      <div class="zen-logo">✦</div>
+      <h1>What should I <span class="gradient-text">create?</span></h1>
+      <p class="zen-sub">Type anything and watch it come to life instantly.</p>
     </div>
 
-    <div class="hero-actions">
-      <button class="btn-secondary" onclick="scrollToSection('templates')">
-        <span>⚡ Quick Templates</span>
-      </button>
-      <button class="btn-secondary" onclick="scrollToSection('presentation')">
-        <span>📊 View PRT</span>
-      </button>
+    <div class="zen-box glass-card">
+      <span class="zen-icon">✦</span>
+      <input type="text" id="main-input" placeholder="e.g. A neon samurai in a rainy city..." autocomplete="off" />
+      <button id="suggest-btn-img" onclick="suggestPrompt('image')" title="Auto-Suggest">💡</button>
+      <button id="magic-btn" onclick="magicExpand()" title="Enhance Prompt">🪄</button>
+      <button id="create-btn" onclick="generateImage()">Create ✦</button>
     </div>
-    <div class="hero-stats">
-      <div class="stat"><span class="stat-num">10+</span><span class="stat-label">Prompt Templates</span></div>
-      <div class="stat-divider"></div>
-      <div class="stat"><span class="stat-num">4K</span><span class="stat-label">Resolution Output</span></div>
-      <div class="stat-divider"></div>
-      <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Creative Freedom</span></div>
-    </div>
-  </div>
-  <div class="hero-visual">
-    <div class="hero-card floating">
-      <div class="card-glow"></div>
-      <div class="image-preview-grid">
-        <div class="preview-img p1"></div>
-        <div class="preview-img p2"></div>
-        <div class="preview-img p3"></div>
-        <div class="preview-img p4"></div>
+
+    <div id="output-area" class="output-area">
+      <div id="output-placeholder" class="output-placeholder">
+        <div class="placeholder-icon">🎨</div>
+        <p>Your masterpiece will appear here</p>
       </div>
-      <div class="card-label">✦ AI Generated Gallery</div>
+      <div id="output-loader" class="output-loader" style="display:none;">
+        <div class="spinner"></div>
+        <p id="loader-msg">AI is creating your image...</p>
+        <div class="progress-track"><div id="progress-bar" class="progress-bar-fill"></div></div>
+      </div>
+      <img id="output-img" style="display:none;" alt="AI Generated Image" />
     </div>
-  </div>
-</section>
 
-<!-- ─── GENERATOR SECTION ─── -->
-<section id="generator">
-  <div class="section-header">
-    <div class="section-badge">🎨 Image Generator</div>
-    <h2>Generate AI Images</h2>
-    <p>Describe anything and watch AI bring it to life</p>
-  </div>
-
-  <div class="generator-container zen-mode">
-    <!-- Main Command Center -->
-    <div class="main-command-center">
-      <div class="command-box-large glass-card">
-        <div class="command-input-wrapper">
-          <div class="command-icon">✦</div>
-          <input type="text" id="subject-input" placeholder="Describe your masterpiece here..." />
-          <button class="btn-generate-main" onclick="generateImage()">🎨 Generate</button>
+    <div id="refine-panel" class="refine-panel glass-card" style="display:none;">
+      <div class="refine-top">
+        <h3>✨ Refine Your Image</h3>
+        <div class="refine-actions-top">
+          <button class="btn-download" onclick="downloadImage()">⬇ Download</button>
+          <button class="btn-share" onclick="shareImage()">🔗 Share</button>
+          <button class="btn-close-refine" onclick="document.getElementById('refine-panel').style.display='none'">✕</button>
         </div>
-        <p class="command-hint">Hint: Try "A futuristic city in the clouds" or "Cyberpunk samurai"</p>
       </div>
-    </div>
-
-    <!-- Immediate Output Display (Inline) -->
-    <div class="inline-output-container glass-card" id="output-section">
-      <div class="output-header">
-        <div class="status-indicator" id="creation-status">Ready to Create</div>
-      </div>
-      
-      <div class="image-display-area" id="image-output-area">
-        <div class="output-placeholder" id="output-placeholder">
-          <div class="placeholder-icon">🎨</div>
-          <p>Your AI Masterpiece will appear here</p>
+      <div class="refine-body">
+        <div class="refine-group">
+          <label>Dimensions</label>
+          <div class="chip-row">
+            <button class="chip active" data-size="1024x1024" onclick="selectChip(this,'size')">Square</button>
+            <button class="chip" data-size="768x1024" onclick="selectChip(this,'size')">Portrait</button>
+            <button class="chip" data-size="1024x768" onclick="selectChip(this,'size')">Landscape</button>
+            <button class="chip" data-size="1280x720" onclick="selectChip(this,'size')">Wide 16:9</button>
+          </div>
         </div>
-        
-        <!-- Loading State -->
-        <div class="inline-loader" id="image-loader" style="display:none;">
-          <div class="loader-spinner"></div>
-          <p>AI is crafting your vision...</p>
-          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="refine-group">
+          <label>Quality</label>
+          <div class="chip-row">
+            <button class="chip active" data-quality="standard" onclick="selectChip(this,'quality')">Standard</button>
+            <button class="chip" data-quality="hd" onclick="selectChip(this,'quality')">HD</button>
+            <button class="chip" data-quality="ultra" onclick="selectChip(this,'quality')">4K Ultra</button>
+          </div>
         </div>
+      </div>
+      <button class="btn-regenerate" onclick="generateImage()">⚡ Apply & Regenerate</button>
+    </div>
 
-        <!-- The Final Image -->
-        <img id="generated-image" src="" alt="Generated AI Image" style="display:none;" />
+    <button class="btn-view-history" onclick="scrollToSection('history')">🕘 View History</button>
+  </div>
+</main>
+
+<!-- ══════════ VIDEO STUDIO MODE ══════════ -->
+<main id="mode-video" class="mode-panel" style="display:none;">
+  <div class="zen-wrap">
+
+    <div class="zen-header">
+      <div class="zen-logo">🎬</div>
+      <h1>Video <span class="gradient-text">Studio</span></h1>
+      <p class="zen-sub">Generate animations or upload & edit your media with AI filters.</p>
+    </div>
+
+    <!-- Studio Sub-Tabs -->
+    <div class="studio-tabs">
+      <button class="studio-tab active" id="stab-gen" onclick="switchStudio('generate')">✨ AI Animation</button>
+      <button class="studio-tab" id="stab-edit" onclick="switchStudio('edit')">✏️ Upload & Edit</button>
+    </div>
+
+    <!-- ── AI ANIMATION PANEL ── -->
+    <div id="studio-generate" class="studio-panel">
+      <div class="zen-box glass-card">
+        <span class="zen-icon">🎬</span>
+        <input type="text" id="video-prompt" placeholder="e.g. A phoenix rising from flames..." autocomplete="off" />
+        <button id="suggest-btn-vid" onclick="suggestPrompt('video')" title="Auto-Suggest">💡</button>
+        <button id="magic-btn-v" onclick="magicExpandVideo()" title="Enhance">🪄</button>
+        <button id="voice-btn" onclick="toggleVoice()" title="AI Voice Narration">🎙️</button>
+        <button id="anim-btn" onclick="generateAnimation()">Animate ▶</button>
       </div>
 
-      <div class="output-actions" id="output-actions" style="display:none;">
-        <button class="btn-primary" onclick="downloadFiltered()">⬇️ Download HD</button>
-        <button class="btn-secondary" onclick="shareImage()">🔗 Share URL</button>
-        <button class="btn-secondary" onclick="generateVariations()">🎲 Variations</button>
+      <div class="refine-body" style="margin-top:8px;width:100%">
+        <div class="refine-group">
+          <label>Resolution</label>
+          <div class="chip-row">
+            <button class="chip active" data-res="720" onclick="selectChip(this,'res')">HD 720p</button>
+            <button class="chip" data-res="1080" onclick="selectChip(this,'res')">Full HD 1080p</button>
+            <button class="chip" data-res="1440" onclick="selectChip(this,'res')">2K QHD</button>
+          </div>
+        </div>
+        <div class="refine-group">
+          <label>Options</label>
+          <div class="chip-row">
+            <button class="chip active" data-frames="6" onclick="selectChip(this,'frames')">6 Frames</button>
+            <button class="chip" data-frames="10" onclick="selectChip(this,'frames')">10 Frames (Epic)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Animation Output -->
+      <div id="anim-area" class="output-area">
+        <div id="anim-placeholder" class="output-placeholder">
+          <div class="placeholder-icon">🎬</div>
+          <p>Your animation will play here</p>
+        </div>
+        <div id="anim-loader" class="output-loader" style="display:none;">
+          <div class="spinner"></div>
+          <p id="anim-loader-msg">Generating frame 0 / 6...</p>
+          <div class="progress-track"><div id="anim-progress" class="progress-bar-fill"></div></div>
+        </div>
+        <div id="anim-player" class="anim-player" style="display:none;">
+          <video id="anim-video" controls loop playsinline style="width:100%;border-radius:12px;"></video>
+          <div class="anim-controls">
+            <button onclick="togglePlay()" id="play-btn">⏸ Pause</button>
+            <button onclick="downloadVideoFile()">⬇ Download Video</button>
+            <span class="frame-counter" id="anim-duration">10+ sec AI Video</span>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</section>
 
-  </div>
-</section>
+    <!-- ── UPLOAD & EDIT PANEL ── -->
+    <div id="studio-edit" class="studio-panel" style="display:none;">
 
-<section id="templates">
-  <div class="section-header">
-    <div class="section-badge">⚡ Quick Templates</div>
-    <h2>One-Click Prompt Templates</h2>
-    <p>Professional prompts ready to use — just fill in your subject</p>
-  </div>
-  <div class="template-input-bar glass-card">
-    <label>Your Subject for Templates:</label>
-    <input type="text" id="template-subject" placeholder="Type your subject (e.g. a dragon, Tokyo skyline, astronaut...)" />
-  </div>
-  <div class="templates-grid">
-    <div class="template-card glass-card" data-type="universal"><div class="tc-icon">🌐</div><h4>Universal Master</h4><p>Works for any subject – covers style, lighting, mood & quality</p><button class="tc-btn" onclick="useTemplate('universal')">Use Template ✦</button></div>
-    <div class="template-card glass-card" data-type="realistic"><div class="tc-icon">📷</div><h4>Hyper Realistic</h4><p>DSLR-quality photography with natural lighting</p><button class="tc-btn" onclick="useTemplate('realistic')">Use Template ✦</button></div>
-    <div class="template-card glass-card" data-type="anime"><div class="tc-icon">🌸</div><h4>Anime Style</h4><p>Vibrant studio-quality anime illustration</p><button class="tc-btn" onclick="useTemplate('anime')">Use Template ✦</button></div>
-    <div class="template-card glass-card" data-type="logo"><div class="tc-icon">💎</div><h4>Logo Design</h4><p>Modern minimalist vector logo design</p><button class="tc-btn" onclick="useTemplate('logo')">Use Template ✦</button></div>
-  </div>
-</section>
+      <!-- Drop Zone -->
+      <div class="upload-zone glass-card" id="upload-zone"
+           onclick="document.getElementById('media-upload').click()"
+           ondragover="event.preventDefault();this.classList.add('drag-over')"
+           ondragleave="this.classList.remove('drag-over')"
+           ondrop="handleDrop(event)">
+        <div class="upload-icon">📁</div>
+        <p class="upload-title">Drop image or video here</p>
+        <p class="upload-sub">or click to browse · JPG, PNG, MP4, WebM, MOV</p>
+        <input type="file" id="media-upload" accept="image/*,video/*" style="display:none;" onchange="handleFileSelect(this)" />
+      </div>
 
-<section id="editor">
-  <div class="section-header">
-    <div class="section-badge">✏️ Image Editor</div>
-    <h2>Edit & Modify with AI</h2>
-  </div>
-  <div class="editor-grid">
-    <div class="editor-card glass-card">
-      <h4>🌄 Background Changer</h4>
-      <input type="text" id="bg-subject" placeholder="e.g. a portrait of a woman" />
-      <input type="text" id="bg-new" placeholder="e.g. futuristic neon city" />
-      <button class="ec-btn" onclick="buildEditorPrompt('background')">Build Prompt ✦</button>
-      <div class="ec-result" id="result-background"></div>
+      <!-- Editor (hidden until upload) -->
+      <div id="editor-panel" class="editor-panel" style="display:none;">
+        <div class="editor-layout">
+          <!-- Preview -->
+          <div class="editor-preview glass-card">
+            <canvas id="edit-canvas" style="display:none;"></canvas>
+            <video id="edit-video" style="display:none;" controls loop></video>
+            <div class="editor-overlay-badge" id="media-type-badge"></div>
+          </div>
+
+          <!-- Controls -->
+          <div class="editor-controls glass-card">
+            <h3>🎨 AI Filters</h3>
+
+            <div class="filter-group">
+              <div class="filter-presets">
+                <button class="preset-btn" onclick="applyPreset('cinematic')">🎬 Cinematic</button>
+                <button class="preset-btn" onclick="applyPreset('vintage')">📷 Vintage</button>
+                <button class="preset-btn" onclick="applyPreset('cyberpunk')">🌆 Cyberpunk</button>
+                <button class="preset-btn" onclick="applyPreset('bw')">⬛ B&W</button>
+                <button class="preset-btn" onclick="applyPreset('warm')">🌅 Warm</button>
+                <button class="preset-btn" onclick="applyPreset('cool')">❄️ Cool</button>
+                <button class="preset-btn" onclick="applyPreset('reset')">↩ Reset</button>
+              </div>
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-row">
+                <label>Brightness <span id="v-brightness">100</span>%</label>
+                <input type="range" id="f-brightness" min="0" max="200" value="100" oninput="applyFilters()">
+              </div>
+              <div class="slider-row">
+                <label>Contrast <span id="v-contrast">100</span>%</label>
+                <input type="range" id="f-contrast" min="0" max="200" value="100" oninput="applyFilters()">
+              </div>
+              <div class="slider-row">
+                <label>Saturation <span id="v-saturation">100</span>%</label>
+                <input type="range" id="f-saturation" min="0" max="200" value="100" oninput="applyFilters()">
+              </div>
+              <div class="slider-row">
+                <label>Hue Rotate <span id="v-hue">0</span>°</label>
+                <input type="range" id="f-hue" min="0" max="360" value="0" oninput="applyFilters()">
+              </div>
+              <div class="slider-row">
+                <label>Blur <span id="v-blur">0</span>px</label>
+                <input type="range" id="f-blur" min="0" max="20" value="0" oninput="applyFilters()">
+              </div>
+              <div class="slider-row">
+                <label>Sepia <span id="v-sepia">0</span>%</label>
+                <input type="range" id="f-sepia" min="0" max="100" value="0" oninput="applyFilters()">
+              </div>
+            </div>
+
+            <div class="editor-actions">
+              <button class="btn-download" onclick="downloadEdited()">⬇ Download Edited</button>
+              <button class="btn-share" onclick="document.getElementById('upload-zone').click()">📁 New File</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="editor-card glass-card">
-      <h4>🗑️ Object Removal</h4>
-      <input type="text" id="obj-remove" placeholder="e.g. power lines" />
-      <button class="ec-btn" onclick="buildEditorPrompt('removal')">Build Prompt ✦</button>
-      <div class="ec-result" id="result-removal"></div>
-    </div>
-  </div>
-</section>
 
+  </div>
+</main>
+
+<!-- HISTORY SECTION -->
 <section id="history">
   <div class="section-header">
-    <div class="section-badge">🕘 History</div>
-    <h2>Your History</h2>
+    <h2>🕘 Your Creations</h2>
+    <p id="history-count">0 images</p>
+    <button class="btn-clear-history" onclick="clearHistory()">🗑 Clear All</button>
   </div>
-  <div class="history-grid" id="history-grid">
-    <div class="history-empty" id="history-empty">No images yet.</div>
-  </div>
-</section>
-
-<section id="presentation">
-  <div class="section-header">
-    <h2>AI Technology – PRT</h2>
-  </div>
-  <div class="slides-wrapper">
-    <div class="slide active">Slide Content Loaded via JS</div>
+  <div id="history-grid" class="history-grid">
+    <div id="history-empty" class="history-empty">No images yet. Create something!</div>
   </div>
 </section>
 
 <footer>
-  <div class="footer-logo">✦ PixelMind AI</div>
-  <p>© 2025 PixelMind AI · Built with ❤️</p>
+  <span>✦ PixelMind AI · Image & Video Studio · 2025</span>
 </footer>
-
-<div id="toast" class="toast"></div>
 
 <script src="app.js"></script>
 </body>
