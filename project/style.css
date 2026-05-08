@@ -236,6 +236,9 @@ footer { text-align: center; padding: 32px; color: var(--text-dim); font-size: 0
 @media (max-width: 700px) {
   .editor-layout { grid-template-columns: 1fr; }
   .refine-body { grid-template-columns: 1fr; }
-  .nav-tabs { display: none; }
-  #navbar { padding: 12px 16px; }
+  #navbar { padding: 12px 16px; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+  .nav-logo { font-size: 1rem; }
+  .nav-cta .btn-glow { padding: 6px 12px; font-size: 0.8rem; }
+  .nav-tabs { display: flex; width: 100%; justify-content: center; }
+  .nav-tab { flex: 1; text-align: center; padding: 8px 10px; font-size: 0.85rem; }
 }
