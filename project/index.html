@@ -57,9 +57,11 @@
     <div class="zen-box glass-card">
       <span class="zen-icon">✦</span>
       <input type="text" id="main-input" placeholder="e.g. A neon samurai in a rainy city..." autocomplete="off" />
-      <button id="suggest-btn-img" onclick="suggestPrompt('image')" title="Auto-Suggest">💡</button>
-      <button id="magic-btn" onclick="magicExpand()" title="Enhance Prompt">🪄</button>
-      <button id="create-btn" onclick="generateImage()">Create ✦</button>
+      <div class="btn-group">
+        <button id="suggest-btn-img" onclick="suggestPrompt('image')" title="Auto-Suggest">💡</button>
+        <button id="magic-btn" onclick="magicExpand()" title="Enhance Prompt">🪄</button>
+        <button id="create-btn" onclick="generateImage()">Create ✦</button>
+      </div>
     </div>
 
     <div id="output-area" class="output-area">
@@ -129,12 +131,14 @@
     <!-- ── AI ANIMATION PANEL ── -->
     <div id="studio-generate" class="studio-panel">
       <div class="zen-box glass-card">
-        <span class="zen-icon">🎬</span>
-        <input type="text" id="video-prompt" placeholder="e.g. A phoenix rising from flames..." autocomplete="off" />
+      <span class="zen-icon">🎬</span>
+      <input type="text" id="video-prompt" placeholder="e.g. A phoenix rising from flames..." autocomplete="off" />
+      <div class="btn-group">
         <button id="suggest-btn-vid" onclick="suggestPrompt('video')" title="Auto-Suggest">💡</button>
         <button id="magic-btn-v" onclick="magicExpandVideo()" title="Enhance">🪄</button>
         <button id="voice-btn" onclick="toggleVoice()" title="AI Voice Narration">🎙️</button>
         <button id="anim-btn" onclick="generateAnimation()">Animate ▶</button>
+      </div>
       </div>
 
       <div class="refine-body" style="margin-top:8px;width:100%">

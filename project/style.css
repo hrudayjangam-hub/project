@@ -122,6 +122,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   box-shadow: 0 0 15px rgba(168,85,247,0.4);
 }
 #create-btn, #anim-btn { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border: none; border-radius: 12px; padding: 14px 24px; font-family: inherit; font-size: 0.95rem; font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.3s; }
+.btn-group { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 #create-btn:hover, #anim-btn:hover { transform: scale(1.05); box-shadow: 0 8px 24px rgba(168,85,247,0.4); }
 #anim-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
@@ -292,14 +293,16 @@ footer { text-align: center; padding: 32px; color: var(--text-dim); font-size: 0
   .zen-logo { font-size: 2rem; margin-bottom: 8px; }
 
   /* ─── Input Box ─── */
-  .zen-box { flex-wrap: wrap; padding: 8px 10px !important; gap: 6px; border-radius: 14px; }
+  .zen-box { flex-wrap: wrap; padding: 10px 8px !important; gap: 6px; border-radius: 14px; }
   .zen-icon { display: none; }
-  .zen-box input { width: 100%; order: -1; padding: 10px 0; font-size: 0.9rem; }
+  .zen-box input { width: 100%; padding: 8px 0; font-size: 0.9rem; min-height: 36px; }
+  .btn-group { gap: 5px; width: 100%; }
+  .btn-group button { flex: 1; min-width: 0; }
   #magic-btn, #magic-btn-v, #suggest-btn-img, #suggest-btn-vid, #voice-btn {
-    padding: 8px 10px; font-size: 0.95rem; flex: 1; min-height: 44px;
+    padding: 6px 6px; font-size: 0.8rem; min-height: 40px;
   }
   #create-btn, #anim-btn {
-    flex: 2; padding: 12px 16px; font-size: 0.85rem; min-height: 44px;
+    padding: 10px 10px; font-size: 0.8rem; min-height: 40px;
   }
 
   /* ─── Output Area ─── */
